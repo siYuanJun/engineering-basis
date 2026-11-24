@@ -1,0 +1,27 @@
+{
+  "GET /api/captcha": {
+    "request_fields": [],
+    "response_fields": [
+      "code",
+      "image"
+    ]
+  },
+  "GET /api/health": {
+    "request_fields": [],
+    "response_fields": [
+      "status"
+    ]
+  },
+  "POST /api/login": {
+    "request_fields": [
+      "captcha",
+      "password",
+      "username"
+    ],
+    "response_fields": [
+      "expiresIn",
+      "role",
+      "token"
+    ]
+  }
+}

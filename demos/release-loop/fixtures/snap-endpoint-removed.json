@@ -1,0 +1,20 @@
+{
+  "GET /api/captcha": {
+    "request_fields": [],
+    "response_fields": [
+      "code",
+      "image"
+    ]
+  },
+  "POST /api/login": {
+    "request_fields": [
+      "captcha",
+      "password",
+      "username"
+    ],
+    "response_fields": [
+      "role",
+      "token"
+    ]
+  }
+}

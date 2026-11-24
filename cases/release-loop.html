@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>release-loop · 发版前的判定口径</title>
+<style>
+  :root{
+    --ink:#14181F; --sub:#5B6675; --line:#E4E8EE; --bg:#FFFFFF; --soft:#F6F8FA;
+    --block:#A3231C; --approve:#1E6B3A; --escalate:#8A5A00;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.75 "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:72px 28px 96px}
+  .eyebrow{font:12px/1 var(--mono);letter-spacing:.18em;color:var(--sub);text-transform:uppercase}
+  h1{font-size:34px;line-height:1.3;margin:18px 0 10px;letter-spacing:-.01em}
+  .lead{color:var(--sub);font-size:16px;margin:0 0 8px;max-width:760px}
+  .meta{font:12px/1.6 var(--mono);color:var(--sub);margin-top:18px}
+  h2{font-size:20px;margin:56px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  h2 .n{font:12px/1 var(--mono);color:var(--sub);margin-right:10px}
+  p{margin:0 0 12px;max-width:800px}
+  ul{margin:0 0 12px;padding-left:20px;max-width:800px}
+  li{margin:4px 0}
+  .cards{display:grid;gap:16px;margin:18px 0 8px}
+  .card{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .card .hd b{font-size:15px}
+  .badge{font:600 12px/1 var(--mono);letter-spacing:.08em;padding:6px 9px;border-radius:4px;border:1px solid currentColor}
+  .badge.block{color:var(--block)}
+  .badge.approve{color:var(--approve)}
+  .badge.escalate{color:var(--escalate)}
+  .cmd{font:12px/1.6 var(--mono);background:var(--soft);border:1px solid var(--line);
+    border-radius:6px;padding:9px 11px;margin:8px 0;color:#26313D;overflow-x:auto;white-space:pre}
+  .out{font:12px/1.65 var(--mono);background:#FBFCFD;border-left:2px solid var(--line);
+    padding:8px 12px;margin:6px 0 10px;color:#3A4553;white-space:pre;overflow-x:auto}
+  .say{font-size:14px;color:var(--sub);margin:0}
+  .rule{border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0;background:#FCFDFE}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font:12px/1.4 var(--mono);color:var(--sub);letter-spacing:.06em;font-weight:500}
+  .k{font:12px/1.6 var(--mono);color:var(--sub)}
+  footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);
+    font:12px/1.8 var(--mono);color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">CASE / 判定口径</div>
+  <h1>发版前，什么情况不能发</h1>
+  <p class="lead">release-loop 把发版拆成四层闸门，每层有明确的放过条件和停手条件。下面三个样例都走同一份契约快照比对，可以直接跑出同样的结果。</p>
+  <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
+
+  <h2><span class="n">01</span>它解决什么</h2>
+  <p>发版出事，很少是包传错。常见是三件事：把“容器 Up、版本号对”当成发版成功；只升了一半，后端改了响应字段、前端没跟；结论跑在证据前面，“应该是环境问题”。这个工程把“这个版本能不能发”拆成四层——契约、同源、冒烟、生产只读——每层有判定，失败就停。</p>
+  <ul>
+    <li>L1 契约：提交前比对接口字段，删字段、改字段名即阻断</li>
+    <li>L2 同源：前后端同一批制品、版本单一来源</li>
+    <li>L3 冒烟：发版后验真实业务链路，健康检查不算数</li>
+    <li>L4 生产：只做只读确认，按回车由人执行</li>
+  </ul>
+
+  <h2><span class="n">02</span>三个可复现的判定</h2>
+  <div class="cards">
+
+    <div class="card">
+      <div class="hd"><b>样例 A · 响应字段被改名</b><span class="badge block">BLOCK</span></div>
+      <div class="cmd">python3 demos/release-loop/contract_snapshot.py diff \
+  --old demos/release-loop/fixtures/snap-base.json \
+  --new demos/release-loop/fixtures/snap-field-renamed.json --fail-on-removal</div>
+      <div class="out">{"breaking":[{"endpoint":"GET /api/captcha","kind":"response_fields","field":"code"}],
+ "additive":[{"endpoint":"GET /api/captcha","kind":"response_fields","field":"imageCode"}]}
+破坏性变更 1 条，新增 1 条 · exit 1</div>
+      <p class="say">验证码接口把 code 改名 imageCode。后端自己测是通的，前端还按 code 取值，页面拿不到验证码。字段改名就是半套升级，发版前拦掉。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><b>样例 B · 只新增字段</b><span class="badge approve">PASS</span></div>
+      <div class="cmd">python3 demos/release-loop/contract_snapshot.py diff \
+  --old demos/release-loop/fixtures/snap-base.json \
+  --new demos/release-loop/fixtures/snap-additive.json --fail-on-removal</div>
+      <div class="out">{"breaking":[],
+ "additive":[{"endpoint":"POST /api/login","kind":"response_fields","field":"expiresIn"}]}
+破坏性变更 0 条，新增 1 条 · exit 0</div>
+      <p class="say">登录响应加了 expiresIn，老前端不读也不受影响。新增字段不构成阻断理由，放行。闸门只拦会破坏现有调用的变更。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><b>样例 C · 端点被删掉</b><span class="badge block">BLOCK</span></div>
+      <div class="cmd">python3 demos/release-loop/contract_snapshot.py diff \
+  --old demos/release-loop/fixtures/snap-base.json \
+  --new demos/release-loop/fixtures/snap-endpoint-removed.json --fail-on-removal</div>
+      <div class="out">{"breaking":[{"endpoint":"GET /api/health","reason":"端点被删除"}],"additive":[]}
+破坏性变更 1 条，新增 0 条 · exit 1</div>
+      <p class="say">健康检查端点被删。发版脚本还在探它，切完容器就判失败。端点删除比字段改名更彻底，同样阻断。</p>
+    </div>
+
+  </div>
+
+  <h2><span class="n">03</span>规则是脚本拦截</h2>
+  <p>“发版前比对契约”写在文档里很容易，落到执行常被跳过，因为人总觉得“这次只是加个字段”。这里的做法是让 diff 直接给退出码，跳过就等于失败。</p>
+
+  <div class="rule">
+    <p><b>健康 200 不构成证据。</b>它只证明进程活着。样例 C 里端点被删，服务照样起得来，健康探针照样返回 200，发版脚本却会挂在下一步。所以 L3 的强制项是真实业务链路：取验证码、图片非空、提交、拿 token。</p>
+    <p><b>比对的是字段集合，不是“看起来对”。</b>字段名、端点路径、请求体字段逐个比，少一个就是破坏性变更。判断不依赖当时的评审人记不记得。</p>
+  </div>
+
+  <h2><span class="n">04</span>判据与边界</h2>
+  <table>
+    <tr><th>维度</th><th>口径</th></tr>
+    <tr><td>拦什么</td><td>端点删除、请求或响应字段删除与改名</td></tr>
+    <tr><td>什么时候放行</td><td>破坏性变更 0 条；新增字段、新增端点不算</td></tr>
+    <tr><td>什么时候停手</td><td>破坏性变更 ≥1，停手；要么同批发，要么回退</td></tr>
+    <tr><td>验证顺序</td><td>L1 契约（提交前）→ L2 同源（合入前）→ L3 冒烟（发版后）→ L4 生产只读</td></tr>
+    <tr><td>职责范围</td><td>判定“这个包能不能发”；生产按回车由人执行</td></tr>
+  </table>
+  <p class="k">执行方式：本地运行，Python 3 直接跑；快照由 snapshot 子命令生成，diff 做比对；退出码 0 = 放行，1 = 破坏性变更，2 = 用法或读取错误。</p>
+
+  <h2><span class="n">05</span>怎么复现</h2>
+  <div class="cmd">git clone --depth 1 https://github.com/siYuanJun/engineering-basis
+cd engineering-basis
+for f in field-renamed additive endpoint-removed; do
+  python3 demos/release-loop/contract_snapshot.py diff \
+    --old demos/release-loop/fixtures/snap-base.json \
+    --new demos/release-loop/fixtures/snap-$f.json --fail-on-removal
+done</div>
+  <p class="k">快照用 openapi-base.json 等四份源生成：snapshot --source fixtures/openapi-base.json --out fixtures/snap-base.json。样例为构造输入。</p>
+
+  <footer>
+    本页与 demos/release-loop 为公开切片；完整工程含四层 Gate 报告、发版内容清单与事故反哺，在私有仓。
+  </footer>
+
+</div>
+</body>
+</html>
