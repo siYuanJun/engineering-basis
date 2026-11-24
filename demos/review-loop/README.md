@@ -27,5 +27,3 @@ python3 check.py fixtures/invalid-style.json
 保留：字段校验（id/severity/file/line/claim/evidence/verify/status）、风格词拦截、同文件同行去重、三态判定、退出码。
 
 不含：改动打包、轮次台账写入、指标归一、交接单生成、跨文件影响面分析。
-
-样例均为合成数据，不含任何项目信息。
