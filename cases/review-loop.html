@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>review-loop · 合入前审查的判定口径</title>
+<style>
+  :root{
+    --ink:#14181F; --sub:#5B6675; --line:#E4E8EE; --bg:#FFFFFF; --soft:#F6F8FA;
+    --block:#A3231C; --approve:#1E6B3A; --escalate:#8A5A00;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.75 "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:72px 28px 96px}
+  .eyebrow{font:12px/1 var(--mono);letter-spacing:.18em;color:var(--sub);text-transform:uppercase}
+  h1{font-size:34px;line-height:1.3;margin:18px 0 10px;letter-spacing:-.01em}
+  .lead{color:var(--sub);font-size:16px;margin:0 0 8px;max-width:760px}
+  .meta{font:12px/1.6 var(--mono);color:var(--sub);margin-top:18px}
+  h2{font-size:20px;margin:56px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  h2 .n{font:12px/1 var(--mono);color:var(--sub);margin-right:10px}
+  p{margin:0 0 12px;max-width:800px}
+  ul{margin:0 0 12px;padding-left:20px;max-width:800px}
+  li{margin:4px 0}
+  .cards{display:grid;gap:16px;margin:18px 0 8px}
+  .card{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .card .hd b{font-size:15px}
+  .badge{font:600 12px/1 var(--mono);letter-spacing:.08em;padding:6px 9px;border-radius:4px;border:1px solid currentColor}
+  .badge.block{color:var(--block)}
+  .badge.approve{color:var(--approve)}
+  .badge.escalate{color:var(--escalate)}
+  .cmd{font:12px/1.6 var(--mono);background:var(--soft);border:1px solid var(--line);
+    border-radius:6px;padding:9px 11px;margin:8px 0;color:#26313D;overflow-x:auto;white-space:pre}
+  .out{font:12px/1.65 var(--mono);background:#FBFCFD;border-left:2px solid var(--line);
+    padding:8px 12px;margin:6px 0 10px;color:#3A4553;white-space:pre;overflow-x:auto}
+  .say{font-size:14px;color:var(--sub);margin:0}
+  .rule{border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0;background:#FCFDFE}
+  .rule b{display:block;font-size:14px;margin-bottom:6px}
+  .rule .out{margin-bottom:0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font:12px/1.4 var(--mono);color:var(--sub);letter-spacing:.06em;font-weight:500}
+  .k{font:12px/1.6 var(--mono);color:var(--sub)}
+  footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);
+    font:12px/1.8 var(--mono);color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">CASE / 判定口径</div>
+  <h1>合入前审查，怎么判、什么情况判不过</h1>
+  <p class="lead">review-loop 把 AI 生成代码的合入审查收敛成三种结论：通过、阻断、升级。下面三个样例不是项目记录，是可以直接跑出同样结果的输入。</p>
+  <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
+
+  <h2><span class="n">01</span>它解决什么</h2>
+  <p>AI 写代码快，评审跟不上。常见两种失效：一是所有意见都提，噪声淹没真问题；二是同一处改到第四轮还在来回。这个工程只做一件事——给“这条改动能不能合”一个可复核的判定，并把意见压到能收口的数量。</p>
+  <ul>
+    <li>只看缺陷与影响面，风格类意见不进清单</li>
+    <li>每条发现必须带位置、主张、证据、复核方式，缺一不成立</li>
+    <li>最多三轮，超了不再继续磨，转升级</li>
+  </ul>
+
+  <h2><span class="n">02</span>三个可复现的判定</h2>
+  <div class="cards">
+
+    <div class="card">
+      <div class="hd"><b>样例 A · 一条真实缺陷未关闭</b><span class="badge block">BLOCK</span></div>
+      <div class="cmd">python3 demos/review-loop/check.py demos/review-loop/fixtures/block.json</div>
+      <div class="out">verdict: BLOCK
+reason : 1 条未关闭（Important 1）
+total 2 ｜ open 1 ｜ open_important 1 ｜ invalid 0</div>
+      <p class="say">输入是一段登录态处理的改动：token 失效时接口仍返回 200，前端据此当成成功。一条 Important 未关闭即阻断；另一条 Nit 已修复，不参与阻断。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><b>样例 B · 有历史问题，但已给处置</b><span class="badge approve">APPROVE</span></div>
+      <div class="cmd">python3 demos/review-loop/check.py demos/review-loop/fixtures/pass.json</div>
+      <div class="out">verdict: APPROVE
+reason : 无阻塞项；1 条历史问题已注明另开单
+total 3 ｜ open 1 ｜ open_important 0 ｜ invalid 1</div>
+      <p class="say">说明“有 open 就拦”是误读。历史遗留问题只要写明另开单、且没有 Important 未关闭，就放行。审查不是把旧账全算在这次改动上。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><b>样例 C · 同一问题磨到第四轮</b><span class="badge escalate">ESCALATE</span></div>
+      <div class="cmd">python3 demos/review-loop/check.py demos/review-loop/fixtures/block.json --round 4</div>
+      <div class="out">verdict: ESCALATE
+reason : 第 4 轮仍有 1 条 Important 未关闭，停手重想方案</div>
+      <p class="say">三轮封顶是硬规则。到第四轮还在同一处来回，通常不是改得不够，是方案本身有问题，继续审只会消耗双方。</p>
+    </div>
+
+  </div>
+
+  <h2><span class="n">03</span>规则不是口号，是脚本拦截</h2>
+  <p>“风格不进清单”“每条要能复核”写在文档里很容易，落到执行常被绕过。这里的做法是让不合规的清单直接生成不了结论。</p>
+
+  <div class="rule">
+    <b>只提命名与格式，清单被拒</b>
+    <div class="cmd">python3 demos/review-loop/check.py demos/review-loop/fixtures/invalid-style.json</div>
+    <div class="out">清单不合法：
+  - F-001: 疑似风格/命名类意见，按规则应丢弃，不进清单
+不生成结论。先修清单。</div>
+  </div>
+
+  <div class="rule">
+    <b>发现写得再像，缺复核方式也立不住</b>
+    <div class="cmd">python3 demos/review-loop/check.py demos/review-loop/fixtures/invalid-missing-evidence.json</div>
+    <div class="out">清单不合法：
+  - F-001: 缺字段 verify
+不生成结论。先修清单。</div>
+  </div>
+
+  <h2><span class="n">04</span>判据与边界</h2>
+  <table>
+    <tr><th>维度</th><th>口径</th></tr>
+    <tr><td>审什么</td><td>缺陷、影响面、安全；不审流程流转、不审代码风格</td></tr>
+    <tr><td>什么算成立</td><td>文件 + 行号 + 可验证主张 + 证据 + 复核方式，五项齐全</td></tr>
+    <tr><td>什么时候放行</td><td>无 Important 未关闭；历史问题已注明处置</td></tr>
+    <tr><td>什么时候停手</td><td>三轮未收敛，转升级，不再继续审</td></tr>
+    <tr><td>不做什么</td><td>不替人做架构决策，不因为“可以更好”而阻断</td></tr>
+  </table>
+  <p class="k">已知边界：尚未接 CI，目前只能本地跑；跨文件调用链的影响面判不全；规则靠清单字段约束，不做 AST 级分析。</p>
+
+  <h2><span class="n">05</span>怎么复现</h2>
+  <div class="cmd">git clone --depth 1 https://github.com/siYuanJun/engineering-basis
+cd engineering-basis
+python3 demos/review-loop/check.py demos/review-loop/fixtures/block.json
+python3 demos/review-loop/check.py demos/review-loop/fixtures/pass.json
+python3 demos/review-loop/check.py demos/review-loop/fixtures/block.json --round 4</div>
+  <p class="k">脚本零依赖，Python 3 直接跑。退出码 0 = 通过，1 = 清单不合法，3 = 阻断或升级。</p>
+
+  <footer>
+    本页与 demos/review-loop 为公开切片；完整工程含轮次台账、指标统计与交接单，不在此仓。样例为合成数据，不含任何项目信息。
+  </footer>
+
+</div>
+</body>
+</html>

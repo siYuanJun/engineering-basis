@@ -1,0 +1,15 @@
+{
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "Nit",
+      "file": "web/src/api/auth.ts",
+      "line": 8,
+      "claim": "变量命名不一致，建议统一为 camelCase",
+      "evidence": "auth.ts:8 用了下划线",
+      "verify": "人工确认命名风格",
+      "status": "open",
+      "response": ""
+    }
+  ]
+}

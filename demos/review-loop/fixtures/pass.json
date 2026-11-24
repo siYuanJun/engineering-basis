@@ -1,0 +1,37 @@
+{
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "Important",
+      "file": "web/src/api/auth.ts",
+      "line": 42,
+      "claim": "后端字段改为 data.img，此处仍读 data.image，验证码会空白",
+      "evidence": "server/openapi.yaml:318 定义 CaptchaResponse.img；全仓 data.image 仅此一处",
+      "verify": "启动前后端，打开 /login，断言验证码 src 非空",
+      "status": "fixed",
+      "response": "已改为 data.img，commit 9f2c1a"
+    },
+    {
+      "id": "F-002",
+      "severity": "Nit",
+      "file": "web/src/api/auth.ts",
+      "line": 88,
+      "claim": "快速刷新会发两次请求，缺并发保护",
+      "evidence": "pages/login.tsx:57 连续调用两次",
+      "verify": "连点刷新 5 次，Network 只应有 1 次请求",
+      "status": "accepted",
+      "response": "影响可忽略，暂不加锁"
+    },
+    {
+      "id": "F-003",
+      "severity": "Pre-existing",
+      "file": "server/handlers/auth.py",
+      "line": 120,
+      "claim": "验证码过期时间 60 秒与文档 120 秒不一致",
+      "evidence": "handlers/auth.py:120；docs/auth.md:34",
+      "verify": "等待 61 秒后提交，应仍有效",
+      "status": "open",
+      "response": "非本次引入，另开单 BUG-130"
+    }
+  ]
+}

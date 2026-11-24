@@ -1,0 +1,13 @@
+{
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "Important",
+      "file": "server/handlers/auth.py",
+      "line": 88,
+      "claim": "这里的错误处理不太对，可能会出问题",
+      "evidence": "看代码觉得有问题",
+      "status": "open"
+    }
+  ]
+}

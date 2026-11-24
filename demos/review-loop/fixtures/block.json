@@ -1,0 +1,26 @@
+{
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "Important",
+      "file": "server/handlers/auth.py",
+      "line": 88,
+      "claim": "登录接口在 token 失效时返回 200 且带空 token，前端会当成成功",
+      "evidence": "handlers/auth.py:88 错误分支未设 status；web/src/api/auth.ts:61 只判 res.ok",
+      "verify": "用过期 token 调 /login/refresh，断言返回 401 而非 200",
+      "status": "open",
+      "response": ""
+    },
+    {
+      "id": "F-002",
+      "severity": "Nit",
+      "file": "web/src/pages/login.tsx",
+      "line": 112,
+      "claim": "错误提示文案与接口返回的 code 不对应，用户看到通用错误",
+      "evidence": "login.tsx:112 固定文案；openapi.yaml:402 定义 code 枚举",
+      "verify": "分别触发 401 与 429，页面应显示不同提示",
+      "status": "fixed",
+      "response": "已按 code 映射"
+    }
+  ]
+}
