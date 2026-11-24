@@ -7,8 +7,10 @@
 ## 现有
 
 - 合入前审查：三态判定、风格不进清单、三轮封顶 —— [案例页](cases/review-loop.html) / [可跑切片](demos/review-loop/)
-
-- 发版闸门、缺陷闭环、需求核对、交付表达：在补，按同一模板
+- 发版闸门：契约快照比对，字段改名与端点删除阻断 —— [案例页](cases/release-loop.html) / [可跑切片](demos/release-loop/)
+- 缺陷闭环：归因决定谁能落，关闭交给提报人 —— [案例页](cases/bug-loop.html) / [可跑切片](demos/bug-loop/)
+- 需求核对：逐条台账，验收独立、冲突待决策 —— [案例页](cases/prd-gap-loop.html) / [可跑切片](demos/prd-gap-loop/)
+- 交付表达：结构与文案先校验，再生成舞台 —— [案例页](cases/stage-spec.html) / [可跑切片](demos/stage-spec/)
 
 ## 结构
 

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bug-loop · 缺陷收口的判定口径</title>
+<style>
+  :root{
+    --ink:#14181F; --sub:#5B6675; --line:#E4E8EE; --bg:#FFFFFF; --soft:#F6F8FA;
+    --block:#A3231C; --approve:#1E6B3A; --escalate:#8A5A00;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.75 "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:72px 28px 96px}
+  .eyebrow{font:12px/1 var(--mono);letter-spacing:.18em;color:var(--sub);text-transform:uppercase}
+  h1{font-size:34px;line-height:1.3;margin:18px 0 10px;letter-spacing:-.01em}
+  .lead{color:var(--sub);font-size:16px;margin:0 0 8px;max-width:760px}
+  .meta{font:12px/1.6 var(--mono);color:var(--sub);margin-top:18px}
+  h2{font-size:20px;margin:56px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  h2 .n{font:12px/1 var(--mono);color:var(--sub);margin-right:10px}
+  p{margin:0 0 12px;max-width:800px}
+  ul{margin:0 0 12px;padding-left:20px;max-width:800px}
+  li{margin:4px 0}
+  .cards{display:grid;gap:16px;margin:18px 0 8px}
+  .card{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .card .hd b{font-size:15px}
+  .badge{font:600 12px/1 var(--mono);letter-spacing:.08em;padding:6px 9px;border-radius:4px;border:1px solid currentColor}
+  .badge.block{color:var(--block)}
+  .badge.approve{color:var(--approve)}
+  .badge.escalate{color:var(--escalate)}
+  .cmd{font:12px/1.6 var(--mono);background:var(--soft);border:1px solid var(--line);
+    border-radius:6px;padding:9px 11px;margin:8px 0;color:#26313D;overflow-x:auto;white-space:pre}
+  .out{font:12px/1.65 var(--mono);background:#FBFCFD;border-left:2px solid var(--line);
+    padding:8px 12px;margin:6px 0 10px;color:#3A4553;white-space:pre;overflow-x:auto}
+  .say{font-size:14px;color:var(--sub);margin:0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font:12px/1.4 var(--mono);color:var(--sub);letter-spacing:.06em;font-weight:500}
+  .k{font:12px/1.6 var(--mono);color:var(--sub)}
+  footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);
+    font:12px/1.8 var(--mono);color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">CASE / 判定口径</div>
+  <h1>缺陷闭环，改完算不算完</h1>
+  <p class="lead">bug-loop 把接单、定位、修复、反馈、关闭拆成六个阶段，每个阶段有明确的落地条件。下面三个样例走同一套闸门判定，可以直接跑出同样的结果。</p>
+  <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
+
+  <h2><span class="n">01</span>它解决什么</h2>
+  <p>缺陷处理最含糊的是收口。代码改完不等于单能结；归因是代码问题还是需求问题，处理方式完全不同；关闭权限不在开发手里。没有固定的落地条件，就会出现“改完了但不敢关”“关了又被激活”“需求问题用代码绕过”。</p>
+  <ul>
+    <li>归因先定性：代码类还是需求类，决定谁能落</li>
+    <li>需求类归因一律人拍板，AI 不替产品做决定</li>
+    <li>改动按重量分档，涉及表结构与数据迁移由人主导</li>
+    <li>关闭动作交给提报人，AI 只提醒</li>
+  </ul>
+
+  <h2><span class="n">02</span>三个可复现的判定</h2>
+  <div class="cards">
+
+    <div class="card">
+      <div class="hd"><b>样例 A · 代码问题，自测通过</b><span class="badge approve">RESOLVE</span></div>
+      <div class="cmd">python3 demos/bug-loop/bug_gate.py demos/bug-loop/fixtures/resolve.json</div>
+      <div class="out">{
+  "verdict": "RESOLVE",
+  "reason": "代码类归因且自测通过，可写回解决"
+}
+exit 0</div>
+      <p class="say">归因 fixed，自测通过，改动属于 L1 可直接撤回。这类可以自动写回解决，并留下复现步骤与验证方式。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><b>样例 B · 归到需求问题</b><span class="badge escalate">HOLD_OWNER</span></div>
+      <div class="cmd">python3 demos/bug-loop/bug_gate.py demos/bug-loop/fixtures/need-decision.json</div>
+      <div class="out">{
+  "verdict": "HOLD_OWNER",
+  "reason": "归因为 bydesign，属于需求判断，需人拍板"
+}
+exit 3</div>
+      <p class="say">bydesign 意味着“不是缺陷，是设计如此”。这类判断不能由开发自己下，否则需求边界会被代码悄悄改写。停下来，等人拍板。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><b>样例 C · 关闭这张单</b><span class="badge block">HANDOFF</span></div>
+      <div class="cmd">python3 demos/bug-loop/bug_gate.py demos/bug-loop/fixtures/close.json</div>
+      <div class="out">{
+  "verdict": "HANDOFF",
+  "reason": "关闭只由提报人操作，AI 提醒到位即止"
+}
+exit 3</div>
+      <p class="say">就算提报人已经口头确认，关闭动作也由他在页面上点。AI 把备注、截图、复现步骤备齐，然后交接，不代点。</p>
+    </div>
+
+  </div>
+
+  <h2><span class="n">03</span>规则是脚本拦截</h2>
+  <p>“需求类归因要人拍板”写在规范里，执行时最容易被跳过，因为开发觉得自己判断得准。这里把归因取值直接写进判定，值不对就落不下去。</p>
+  <table>
+    <tr><th>动作</th><th>条件</th><th>结果</th></tr>
+    <tr><td>resolve</td><td>归因为需求类（tostory / bydesign / notrepro / postponed / willnotfix）</td><td>停下，等人拍板</td></tr>
+    <tr><td>resolve</td><td>归因为代码类，但自测未通过</td><td>停下，不写回解决</td></tr>
+    <tr><td>resolve</td><td>改动涉及表结构、数据迁移、存量修数</td><td>停下，由人主导评估</td></tr>
+    <tr><td>close</td><td>任何情况</td><td>交接给提报人</td></tr>
+  </table>
+
+  <h2><span class="n">04</span>判据与边界</h2>
+  <table>
+    <tr><th>维度</th><th>口径</th></tr>
+    <tr><td>判什么</td><td>这条单的当前动作能不能由 AI 落地</td></tr>
+    <tr><td>什么时候可落</td><td>代码类归因、自测通过、改动可直接撤回</td></tr>
+    <tr><td>什么时候停手</td><td>需求类归因、改动不可撤回、关闭动作、争议与超时</td></tr>
+    <tr><td>谁拍板</td><td>需求归因与关闭由人或提报人；合并共享分支按授权级别</td></tr>
+    <tr><td>职责范围</td><td>读单、定位、归因、修复、写状态、对账；关闭与打回由人操作</td></tr>
+  </table>
+  <p class="k">执行方式：本地运行，Python 3 直接跑；输入为一条缺陷单的 JSON；退出码 0 = 可落，3 = 需人拍板或交接，1 = 输入不合法。</p>
+
+  <h2><span class="n">05</span>怎么复现</h2>
+  <div class="cmd">git clone --depth 1 https://github.com/siYuanJun/engineering-basis
+cd engineering-basis
+for f in resolve need-decision close; do
+  python3 demos/bug-loop/bug_gate.py demos/bug-loop/fixtures/$f.json
+  echo "exit=$?"
+done</div>
+  <p class="k">三个样例为构造输入，分别覆盖可落、需人拍板、交接三种结果。</p>
+
+  <footer>
+    本页与 demos/bug-loop 为公开切片；完整工程含缺陷平台适配、台账对账与合并闸门，在私有仓。
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stage-spec · 交付表达的判定口径</title>
+<style>
+  :root{
+    --ink:#14181F; --sub:#5B6675; --line:#E4E8EE; --bg:#FFFFFF; --soft:#F6F8FA;
+    --block:#A3231C; --approve:#1E6B3A; --escalate:#8A5A00;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.75 "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:72px 28px 96px}
+  .eyebrow{font:12px/1 var(--mono);letter-spacing:.18em;color:var(--sub);text-transform:uppercase}
+  h1{font-size:34px;line-height:1.3;margin:18px 0 10px;letter-spacing:-.01em}
+  .lead{color:var(--sub);font-size:16px;margin:0 0 8px;max-width:760px}
+  .meta{font:12px/1.6 var(--mono);color:var(--sub);margin-top:18px}
+  h2{font-size:20px;margin:56px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  h2 .n{font:12px/1 var(--mono);color:var(--sub);margin-right:10px}
+  p{margin:0 0 12px;max-width:800px}
+  ul{margin:0 0 12px;padding-left:20px;max-width:800px}
+  li{margin:4px 0}
+  .cards{display:grid;gap:16px;margin:18px 0 8px}
+  .card{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .card .hd b{font-size:15px}
+  .badge{font:600 12px/1 var(--mono);letter-spacing:.08em;padding:6px 9px;border-radius:4px;border:1px solid currentColor}
+  .badge.block{color:var(--block)}
+  .badge.approve{color:var(--approve)}
+  .badge.escalate{color:var(--escalate)}
+  .cmd{font:12px/1.6 var(--mono);background:var(--soft);border:1px solid var(--line);
+    border-radius:6px;padding:9px 11px;margin:8px 0;color:#26313D;overflow-x:auto;white-space:pre}
+  .out{font:12px/1.65 var(--mono);background:#FBFCFD;border-left:2px solid var(--line);
+    padding:8px 12px;margin:6px 0 10px;color:#3A4553;white-space:pre;overflow-x:auto}
+  .say{font-size:14px;color:var(--sub);margin:0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font:12px/1.4 var(--mono);color:var(--sub);letter-spacing:.06em;font-weight:500}
+  .k{font:12px/1.6 var(--mono);color:var(--sub)}
+  footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);
+    font:12px/1.8 var(--mono);color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">CASE / 判定口径</div>
+  <h1>交付表达，复杂结构怎么讲清</h1>
+  <p class="lead">3d-stage-deck 把“讲清楚一个系统”拆成可校验的结构：几层、每层一句职责、流程按什么顺序走。下面三个样例先过结构校验，再决定能不能生成舞台。</p>
+  <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
+
+  <h2><span class="n">01</span>它解决什么</h2>
+  <p>讲清一个系统，难的不是画图，是取舍。讲不清通常有三个原因：层数和内容对不上、流程节点对不上层、文案长到放不下。这些不是审美问题，是结构问题，可以先校验再生成。</p>
+  <ul>
+    <li>层数控制在 3–5：多了讲不完，少了讲不出接力</li>
+    <li>每层一句职责，不超过 70 字，标签才放得下</li>
+    <li>流程至少三步，每一步必须落在已经定义的层或团队上</li>
+    <li>校验不过就不生成，避免做出一个“看起来复杂但说不清”的页面</li>
+  </ul>
+
+  <h2><span class="n">02</span>三个可复现的判定</h2>
+  <div class="cards">
+
+    <div class="card">
+      <div class="hd"><b>样例 A · 五层结构完整</b><span class="badge approve">PASS</span></div>
+      <div class="cmd">python3 demos/stage-spec/spec_check.py demos/stage-spec/fixtures/pass.json</div>
+      <div class="out">通过：5 层，4 个团队，9 步
+exit 0</div>
+      <p class="say">每层有 id、名称、一句话职责，九步流转全部落在已定义的节点上。结构成立，可以生成可拆层的舞台。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><b>样例 B · 流程指向不存在的层</b><span class="badge block">FAIL</span></div>
+      <div class="cmd">python3 demos/stage-spec/spec_check.py demos/stage-spec/fixtures/broken-flow.json</div>
+      <div class="out">警告：层 service 没有出现在流程里，讲解时会显得多余
+错误：第 3 步 at 指向不存在的节点：unknown-layer
+未通过：1 个错误 · exit 1</div>
+      <p class="say">第三步指向一个没定义过的节点。页面上光点会走到空白处，讲解到这一步就断了。这类错误必须先修结构，不能靠临场发挥补。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><b>样例 C · 两层，标题过长</b><span class="badge escalate">PASS · 2 提醒</span></div>
+      <div class="cmd">python3 demos/stage-spec/spec_check.py demos/stage-spec/fixtures/thin.json</div>
+      <div class="out">警告：title 超过 24 字（26），标题区会挤
+警告：层数 2，建议 3–5 层
+通过：2 层，0 个团队，3 步 · exit 0</div>
+      <p class="say">两层也能生成，但讲不出“接力”这件事，标题也会挤成两行。校验给提醒，不阻断——结构完整性和表达效果是两件事，前者硬拦，后者提醒。</p>
+    </div>
+
+  </div>
+
+  <h2><span class="n">03</span>规则是脚本拦截</h2>
+  <p>“每层一句话”“流程要闭环”写在文档里，做的时候很容易被内容撑破。这里把错误和提醒分开：结构错误直接阻断生成，表达问题只提示，交给人判断。</p>
+  <table>
+    <tr><th>类型</th><th>例子</th><th>处理</th></tr>
+    <tr><td>错误</td><td>缺标题、层缺 id 或职责、流程少于三步、流程指向不存在节点</td><td>阻断，不生成</td></tr>
+    <tr><td>提醒</td><td>标题超长、层名过长、层数偏少或偏多、团队人数过多</td><td>提示，可继续</td></tr>
+  </table>
+
+  <h2><span class="n">04</span>判据与边界</h2>
+  <table>
+    <tr><th>维度</th><th>口径</th></tr>
+    <tr><td>判什么</td><td>这份结构能不能讲清：层、职责、流程、文案</td></tr>
+    <tr><td>什么时候算过</td><td>层数 3–5；每层有 id、名称、一句话职责；流程 ≥3 步且每步落在已有节点</td></tr>
+    <tr><td>什么时候停手</td><td>流程引用不存在节点、层缺职责、缺标题</td></tr>
+    <tr><td>提醒但不拦</td><td>标题与层名过长、层数偏少、团队人数过多</td></tr>
+    <tr><td>职责范围</td><td>校验结构与文案；业务对错由人判断</td></tr>
+  </table>
+  <p class="k">执行方式：本地运行，Python 3 直接跑；输入为一份 JSON 结构；退出码 0 = 通过，1 = 有错误。</p>
+
+  <h2><span class="n">05</span>怎么复现</h2>
+  <div class="cmd">git clone --depth 1 https://github.com/siYuanJun/engineering-basis
+cd engineering-basis
+for f in pass broken-flow thin; do
+  python3 demos/stage-spec/spec_check.py demos/stage-spec/fixtures/$f.json
+  echo "exit=$?"
+done</div>
+  <p class="k">三份结构为构造输入，覆盖完整、断链、结构偏薄三种情况。</p>
+
+  <footer>
+    本页与 demos/stage-spec 为公开切片；完整工程含舞台生成与镜头交互，在私有仓。
+  </footer>
+
+</div>
+</body>
+</html>
