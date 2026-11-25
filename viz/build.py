@@ -9,6 +9,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -109,12 +110,19 @@ spec = {
     ],
 }
 
-os.makedirs(os.path.join(ROOT, "viz"), exist_ok=True)
+VIZ = os.path.join(ROOT, "viz")
+os.makedirs(VIZ, exist_ok=True)
+three_src = os.path.join(DECK, "assets", "three.module.min.js")
+three_dst = os.path.join(VIZ, "three.module.min.js")
+if not os.path.isfile(three_src):
+    raise SystemExit(f"找不到 {three_src}")
+shutil.copyfile(three_src, three_dst)
 with open(SPEC_OUT, "w", encoding="utf-8") as fh:
     json.dump(spec, fh, ensure_ascii=False, indent=2)
 
 build = subprocess.run(
-    [sys.executable, os.path.join(DECK, "scripts", "build_gate.py"), SPEC_OUT, "--out", OUT],
+    [sys.executable, os.path.join(DECK, "scripts", "build_gate.py"), SPEC_OUT,
+     "--out", OUT, "--three-url", "./three.module.min.js"],
     capture_output=True, text=True,
 )
 print(build.stdout.strip())
