@@ -177,6 +177,16 @@ td:first-child{width:170px;color:var(--ink);font-weight:500}
   padding:16px 20px;margin:18px 0 0;overflow-x:auto;white-space:pre;
 }
 
+
+.viz{margin:30px 0 0}
+.viz .frame{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0B1220}
+.viz .frame .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#93A4B8;font:11.5px/1.6 var(--mono);letter-spacing:.06em}
+.viz .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .5s}
+.viz .frame iframe.ready{opacity:1}
+.viz .fallback{display:none}
+.viz figcaption{margin-top:10px;font:12px/1.8 var(--mono);color:var(--ink-3);max-width:760px}
+.viz figcaption code{font-family:var(--mono);color:var(--ink-2)}
+
 footer{
   margin-top:80px;padding-top:20px;border-top:1px solid var(--line);
   font:11px/1.9 var(--mono);color:var(--ink-3);letter-spacing:.02em;
@@ -202,4 +212,9 @@ footer{
   .quote{font-size:19px}
   td:first-child{width:120px}
   .tree{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11.5px}
+  .viz .frame{aspect-ratio:auto}
+  .viz .frame .ph{display:none}
+  .viz .frame iframe{display:none}
+  .viz .fallback{display:block}
+  .viz .fallback img{width:100%;height:auto;display:block}
 }

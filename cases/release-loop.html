@@ -72,6 +72,18 @@
 
   </div>
 
+
+  <figure class="viz">
+    <div class="frame">
+      <a class="fallback" href="../viz/release-gates.html" target="_blank">
+        <img src="../viz/release-gates.png" alt="发版闸门 3D 流转：版本停在 L1 契约关">
+      </a>
+      <div class="ph">正在载入 3D 场景…</div>
+      <iframe src="../viz/release-gates.html?embed=1" title="发版闸门 3D 流转" loading="lazy" onload="this.classList.add('ready')"></iframe>
+    </div>
+    <figcaption>三个样例放进同一条轨道：A 字段改名与 C 端点删除停在第 1 关，B 只加字段过完四关。判定与退出码由 contract_snapshot.py 实跑生成，不是手写动画。</figcaption>
+  </figure>
+
   <h2 id="s3"><span class="n">03</span>规则是脚本拦截</h2>
   <p>“发版前比对契约”写在文档里很容易，落到执行常被跳过，因为人总觉得“这次只是加个字段”。这里的做法是让 diff 直接给退出码，跳过就等于失败。</p>
 
