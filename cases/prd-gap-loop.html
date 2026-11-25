@@ -9,24 +9,37 @@
 <body>
 
 <header class="top">
-  <div class="inner">
-    <a class="brand" href="../index.html">Engineering Basis</a>
-    <nav>
-      <a href="../index.html#cases">案例</a>
-      <a href="../index.html#structure">结构</a>
-      <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
-    </nav>
-  </div>
+  <a class="brand" href="../index.html">Engineering Basis</a>
+  <nav>
+    <a href="../index.html#cases">案例</a>
+    <a href="../index.html#structure">结构</a>
+    <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
+  </nav>
 </header>
 
-<div class="wrap">
+<aside class="side">
+  <div class="label">This case</div>
+  <nav>
+    <a href="#s1"><span>01</span>解决什么</a>
+    <a href="#s2"><span>02</span>判定样例</a>
+    <a href="#s3"><span>03</span>脚本拦截</a>
+    <a href="#s4"><span>04</span>判据边界</a>
+    <a href="#s5"><span>05</span>复现</a>
+  </nav>
+  <div class="side-foot">
+    <a href="../index.html">← 案例索引</a>
+    5 CASES · 0 DEPS
+  </div>
+</aside>
 
-  <div class="eyebrow">CASE / 判定口径</div>
+<main class="main">
+
+  <div class="kicker"><span class="lead-word">CASE 04 / 05</span><span>PRD-GAP-LOOP</span></div>
   <h1>需求核对，做的是不是写的那件事</h1>
   <p class="lead">prd-gap-loop 把 PRD 条目和现有实现逐条对成一张台账，每条给固定判定、给证据、给验收人。下面三个样例走同一套检查，可以直接跑出同样的结果。</p>
   <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
 
-  <h2><span class="n">01</span>它解决什么</h2>
+  <h2 id="s1"><span class="n">01</span>它解决什么</h2>
   <p>PRD 和实现对不上是常态。真正缺的不是清单，是判定：这条需求到底做到没有、做到一半、还是压根没做，差在哪一行、证据是什么、谁验的。没有这几样，对账会变成“我觉得做了”。</p>
   <ul>
     <li>一条需求一个判定，不用“基本完成”这种说法</li>
@@ -35,7 +48,7 @@
     <li>冲突条目停在待决策，不靠开发自行拍板</li>
   </ul>
 
-  <h2><span class="n">02</span>三个可复现的判定</h2>
+  <h2 id="s2"><span class="n">02</span>三个可复现的判定</h2>
   <div class="cards">
 
     <div class="card">
@@ -75,7 +88,7 @@
 
   </div>
 
-  <h2><span class="n">03</span>规则是脚本拦截</h2>
+  <h2 id="s3"><span class="n">03</span>规则是脚本拦截</h2>
   <p>四条检查都是确定性比对，不依赖评审人记不记得：条目双向差集、证据类型、验收独立性、冲突是否停在待决策。任何一条不过，台账就不算完成。</p>
   <table>
     <tr><th>检查</th><th>拦什么</th></tr>
@@ -85,7 +98,7 @@
     <tr><td>R4 待决策阻塞</td><td>冲突行没写决策人、没标待裁决</td></tr>
   </table>
 
-  <h2><span class="n">04</span>判据与边界</h2>
+  <h2 id="s4"><span class="n">04</span>判据与边界</h2>
   <table>
     <tr><th>维度</th><th>口径</th></tr>
     <tr><td>判什么</td><td>PRD 条目与现有实现，逐条一判</td></tr>
@@ -96,7 +109,7 @@
   </table>
   <p class="k">执行方式：本地运行，Python 3 直接跑；台账为 Markdown 表格，条目清单为文本；退出码 0 = 通过，1 = 有违规，2 = 输入或解析错误。</p>
 
-  <h2><span class="n">05</span>怎么复现</h2>
+  <h2 id="s5"><span class="n">05</span>怎么复现</h2>
   <div class="cmd">git clone --depth 1 https://github.com/siYuanJun/engineering-basis
 cd engineering-basis
 for f in ledger-pass ledger-self-signed ledger-unresolved-conflict; do
@@ -110,6 +123,6 @@ done</div>
     本页与 demos/prd-gap-loop 为公开切片；完整工程含 adapter 模板、台账字段定义与交接包，在私有仓。
   </footer>
 
-</div>
+</main>
 </body>
 </html>

@@ -9,24 +9,37 @@
 <body>
 
 <header class="top">
-  <div class="inner">
-    <a class="brand" href="../index.html">Engineering Basis</a>
-    <nav>
-      <a href="../index.html#cases">案例</a>
-      <a href="../index.html#structure">结构</a>
-      <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
-    </nav>
-  </div>
+  <a class="brand" href="../index.html">Engineering Basis</a>
+  <nav>
+    <a href="../index.html#cases">案例</a>
+    <a href="../index.html#structure">结构</a>
+    <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
+  </nav>
 </header>
 
-<div class="wrap">
+<aside class="side">
+  <div class="label">This case</div>
+  <nav>
+    <a href="#s1"><span>01</span>解决什么</a>
+    <a href="#s2"><span>02</span>判定样例</a>
+    <a href="#s3"><span>03</span>脚本拦截</a>
+    <a href="#s4"><span>04</span>判据边界</a>
+    <a href="#s5"><span>05</span>复现</a>
+  </nav>
+  <div class="side-foot">
+    <a href="../index.html">← 案例索引</a>
+    5 CASES · 0 DEPS
+  </div>
+</aside>
 
-  <div class="eyebrow">CASE / 判定口径</div>
+<main class="main">
+
+  <div class="kicker"><span class="lead-word">CASE 05 / 05</span><span>3D-STAGE-DECK</span></div>
   <h1>交付表达，复杂结构怎么讲清</h1>
   <p class="lead">3d-stage-deck 把“讲清楚一个系统”拆成可校验的结构：几层、每层一句职责、流程按什么顺序走。下面三个样例先过结构校验，再决定能不能生成舞台。</p>
   <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
 
-  <h2><span class="n">01</span>它解决什么</h2>
+  <h2 id="s1"><span class="n">01</span>它解决什么</h2>
   <p>讲清一个系统，难的不是画图，是取舍。讲不清通常有三个原因：层数和内容对不上、流程节点对不上层、文案长到放不下。这些不是审美问题，是结构问题，可以先校验再生成。</p>
   <ul>
     <li>层数控制在 3–5：多了讲不完，少了讲不出接力</li>
@@ -35,7 +48,7 @@
     <li>校验不过就不生成，避免做出一个“看起来复杂但说不清”的页面</li>
   </ul>
 
-  <h2><span class="n">02</span>三个可复现的判定</h2>
+  <h2 id="s2"><span class="n">02</span>三个可复现的判定</h2>
   <div class="cards">
 
     <div class="card">
@@ -66,7 +79,7 @@ exit 0</div>
 
   </div>
 
-  <h2><span class="n">03</span>规则是脚本拦截</h2>
+  <h2 id="s3"><span class="n">03</span>规则是脚本拦截</h2>
   <p>“每层一句话”“流程要闭环”写在文档里，做的时候很容易被内容撑破。这里把错误和提醒分开：结构错误直接阻断生成，表达问题只提示，交给人判断。</p>
   <table>
     <tr><th>类型</th><th>例子</th><th>处理</th></tr>
@@ -74,7 +87,7 @@ exit 0</div>
     <tr><td>提醒</td><td>标题超长、层名过长、层数偏少或偏多、团队人数过多</td><td>提示，可继续</td></tr>
   </table>
 
-  <h2><span class="n">04</span>判据与边界</h2>
+  <h2 id="s4"><span class="n">04</span>判据与边界</h2>
   <table>
     <tr><th>维度</th><th>口径</th></tr>
     <tr><td>判什么</td><td>这份结构能不能讲清：层、职责、流程、文案</td></tr>
@@ -85,7 +98,7 @@ exit 0</div>
   </table>
   <p class="k">执行方式：本地运行，Python 3 直接跑；输入为一份 JSON 结构；退出码 0 = 通过，1 = 有错误。</p>
 
-  <h2><span class="n">05</span>怎么复现</h2>
+  <h2 id="s5"><span class="n">05</span>怎么复现</h2>
   <div class="cmd">git clone --depth 1 https://github.com/siYuanJun/engineering-basis
 cd engineering-basis
 for f in pass broken-flow thin; do
@@ -98,6 +111,6 @@ done</div>
     本页与 demos/stage-spec 为公开切片；完整工程含舞台生成与镜头交互，在私有仓。
   </footer>
 
-</div>
+</main>
 </body>
 </html>

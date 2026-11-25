@@ -9,24 +9,37 @@
 <body>
 
 <header class="top">
-  <div class="inner">
-    <a class="brand" href="../index.html">Engineering Basis</a>
-    <nav>
-      <a href="../index.html#cases">案例</a>
-      <a href="../index.html#structure">结构</a>
-      <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
-    </nav>
-  </div>
+  <a class="brand" href="../index.html">Engineering Basis</a>
+  <nav>
+    <a href="../index.html#cases">案例</a>
+    <a href="../index.html#structure">结构</a>
+    <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
+  </nav>
 </header>
 
-<div class="wrap">
+<aside class="side">
+  <div class="label">This case</div>
+  <nav>
+    <a href="#s1"><span>01</span>解决什么</a>
+    <a href="#s2"><span>02</span>判定样例</a>
+    <a href="#s3"><span>03</span>脚本拦截</a>
+    <a href="#s4"><span>04</span>判据边界</a>
+    <a href="#s5"><span>05</span>复现</a>
+  </nav>
+  <div class="side-foot">
+    <a href="../index.html">← 案例索引</a>
+    5 CASES · 0 DEPS
+  </div>
+</aside>
 
-  <div class="eyebrow">CASE / 判定口径</div>
+<main class="main">
+
+  <div class="kicker"><span class="lead-word">CASE 01 / 05</span><span>REVIEW-LOOP</span></div>
   <h1>合入前审查，怎么判、什么情况判不过</h1>
   <p class="lead">review-loop 把 AI 生成代码的合入审查收敛成三种结论：通过、阻断、升级。下面三个样例给的是输入清单，可以直接跑出同样的结果。</p>
   <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
 
-  <h2><span class="n">01</span>它解决什么</h2>
+  <h2 id="s1"><span class="n">01</span>它解决什么</h2>
   <p>AI 写代码快，评审跟不上。常见两种失效：一是所有意见都提，噪声淹没真问题；二是同一处改到第四轮还在来回。这个工程只做一件事——给“这条改动能不能合”一个可复核的判定，并把意见压到能收口的数量。</p>
   <ul>
     <li>只看缺陷与影响面，风格类意见不进清单</li>
@@ -34,7 +47,7 @@
     <li>最多三轮，超了不再继续磨，转升级</li>
   </ul>
 
-  <h2><span class="n">02</span>三个可复现的判定</h2>
+  <h2 id="s2"><span class="n">02</span>三个可复现的判定</h2>
   <div class="cards">
 
     <div class="card">
@@ -65,7 +78,7 @@ reason : 第 4 轮仍有 1 条 Important 未关闭，停手重想方案</div>
 
   </div>
 
-  <h2><span class="n">03</span>规则不是口号，是脚本拦截</h2>
+  <h2 id="s3"><span class="n">03</span>规则不是口号，是脚本拦截</h2>
   <p>“风格不进清单”“每条要能复核”写在文档里很容易，落到执行常被绕过。这里的做法是让不合规的清单直接生成不了结论。</p>
 
   <div class="rule">
@@ -84,7 +97,7 @@ reason : 第 4 轮仍有 1 条 Important 未关闭，停手重想方案</div>
 不生成结论。先修清单。</div>
   </div>
 
-  <h2><span class="n">04</span>判据与边界</h2>
+  <h2 id="s4"><span class="n">04</span>判据与边界</h2>
   <table>
     <tr><th>维度</th><th>口径</th></tr>
     <tr><td>审什么</td><td>缺陷、影响面、安全；不审流程流转、不审代码风格</td></tr>
@@ -95,7 +108,7 @@ reason : 第 4 轮仍有 1 条 Important 未关闭，停手重想方案</div>
   </table>
   <p class="k">执行方式：本地运行，Python 3 直接跑；判定按清单字段与文件行号；规则以清单字段约束。</p>
 
-  <h2><span class="n">05</span>怎么复现</h2>
+  <h2 id="s5"><span class="n">05</span>怎么复现</h2>
   <div class="cmd">git clone --depth 1 https://github.com/siYuanJun/engineering-basis
 cd engineering-basis
 python3 demos/review-loop/check.py demos/review-loop/fixtures/block.json
@@ -107,6 +120,6 @@ python3 demos/review-loop/check.py demos/review-loop/fixtures/block.json --round
     本页与 demos/review-loop 为公开切片；完整工程含轮次台账、指标统计与交接单，在私有仓。
   </footer>
 
-</div>
+</main>
 </body>
 </html>

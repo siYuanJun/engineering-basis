@@ -9,24 +9,37 @@
 <body>
 
 <header class="top">
-  <div class="inner">
-    <a class="brand" href="../index.html">Engineering Basis</a>
-    <nav>
-      <a href="../index.html#cases">案例</a>
-      <a href="../index.html#structure">结构</a>
-      <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
-    </nav>
-  </div>
+  <a class="brand" href="../index.html">Engineering Basis</a>
+  <nav>
+    <a href="../index.html#cases">案例</a>
+    <a href="../index.html#structure">结构</a>
+    <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
+  </nav>
 </header>
 
-<div class="wrap">
+<aside class="side">
+  <div class="label">This case</div>
+  <nav>
+    <a href="#s1"><span>01</span>解决什么</a>
+    <a href="#s2"><span>02</span>判定样例</a>
+    <a href="#s3"><span>03</span>脚本拦截</a>
+    <a href="#s4"><span>04</span>判据边界</a>
+    <a href="#s5"><span>05</span>复现</a>
+  </nav>
+  <div class="side-foot">
+    <a href="../index.html">← 案例索引</a>
+    5 CASES · 0 DEPS
+  </div>
+</aside>
 
-  <div class="eyebrow">CASE / 判定口径</div>
+<main class="main">
+
+  <div class="kicker"><span class="lead-word">CASE 03 / 05</span><span>BUG-LOOP</span></div>
   <h1>缺陷闭环，改完算不算完</h1>
   <p class="lead">bug-loop 把接单、定位、修复、反馈、关闭拆成六个阶段，每个阶段有明确的落地条件。下面三个样例走同一套闸门判定，可以直接跑出同样的结果。</p>
   <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
 
-  <h2><span class="n">01</span>它解决什么</h2>
+  <h2 id="s1"><span class="n">01</span>它解决什么</h2>
   <p>缺陷处理最含糊的是收口。代码改完不等于单能结；归因是代码问题还是需求问题，处理方式完全不同；关闭权限不在开发手里。没有固定的落地条件，就会出现“改完了但不敢关”“关了又被激活”“需求问题用代码绕过”。</p>
   <ul>
     <li>归因先定性：代码类还是需求类，决定谁能落</li>
@@ -35,7 +48,7 @@
     <li>关闭动作交给提报人，AI 只提醒</li>
   </ul>
 
-  <h2><span class="n">02</span>三个可复现的判定</h2>
+  <h2 id="s2"><span class="n">02</span>三个可复现的判定</h2>
   <div class="cards">
 
     <div class="card">
@@ -73,7 +86,7 @@ exit 3</div>
 
   </div>
 
-  <h2><span class="n">03</span>规则是脚本拦截</h2>
+  <h2 id="s3"><span class="n">03</span>规则是脚本拦截</h2>
   <p>“需求类归因要人拍板”写在规范里，执行时最容易被跳过，因为开发觉得自己判断得准。这里把归因取值直接写进判定，值不对就落不下去。</p>
   <table>
     <tr><th>动作</th><th>条件</th><th>结果</th></tr>
@@ -83,7 +96,7 @@ exit 3</div>
     <tr><td>close</td><td>任何情况</td><td>交接给提报人</td></tr>
   </table>
 
-  <h2><span class="n">04</span>判据与边界</h2>
+  <h2 id="s4"><span class="n">04</span>判据与边界</h2>
   <table>
     <tr><th>维度</th><th>口径</th></tr>
     <tr><td>判什么</td><td>这条单的当前动作能不能由 AI 落地</td></tr>
@@ -94,7 +107,7 @@ exit 3</div>
   </table>
   <p class="k">执行方式：本地运行，Python 3 直接跑；输入为一条缺陷单的 JSON；退出码 0 = 可落，3 = 需人拍板或交接，1 = 输入不合法。</p>
 
-  <h2><span class="n">05</span>怎么复现</h2>
+  <h2 id="s5"><span class="n">05</span>怎么复现</h2>
   <div class="cmd">git clone --depth 1 https://github.com/siYuanJun/engineering-basis
 cd engineering-basis
 for f in resolve need-decision close; do
@@ -107,6 +120,6 @@ done</div>
     本页与 demos/bug-loop 为公开切片；完整工程含缺陷平台适配、台账对账与合并闸门，在私有仓。
   </footer>
 
-</div>
+</main>
 </body>
 </html>
