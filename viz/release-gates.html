@@ -63,10 +63,10 @@ body.embed .tl{left:3vw;top:4vh;max-width:62vw}
   body.embed .sub{display:none}
   body.embed .tr{left:3vw;right:auto;top:96px;justify-content:flex-start}
   body.embed button{font-size:11px;padding:6px 11px}
-  body.embed .card{top:auto;bottom:4vh;right:3vw;width:min(300px,38vw);padding:13px 15px}
+  body.embed .card{top:auto;bottom:3.5vh;right:auto;left:3vw;width:min(258px,34vw);padding:11px 13px}
   body.embed .card .t{font-size:14.5px;margin:5px 0 4px}
-  body.embed .card .b{font-size:11.5px;line-height:1.65}
-  body.embed .card .out{font-size:10.5px;max-height:76px}
+  body.embed .card .b{font-size:11px;line-height:1.6}
+  body.embed .card .out{font-size:10px;max-height:64px}
   body.embed .step{display:none!important}
   body.embed .hint{display:none}
 </style>
@@ -120,7 +120,9 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 
-const cam = {theta: 0.18, phi: 0.95, radius: 25.5, ty: 1.55};
+const COMPACT = innerWidth < 1100;
+const CAM0 = {theta: 0.18, phi: 0.95, radius: COMPACT ? 19.5 : 24, ty: COMPACT ? 1.95 : 1.6};
+const cam = {...CAM0};
 const camTarget = {...cam};
 function applyCam(){
   const sp = Math.sin(cam.phi);
@@ -243,7 +245,7 @@ function makeTerminal(x, text){
   m.position.set(x, .04, 0);
   scene.add(m);
   const el = makeLabel('term', text);
-  labels.push({el, get:()=> new THREE.Vector3(x, 0.55, 2.1), w:70, h:18, kind:'term'});
+  labels.push({el, get:()=> new THREE.Vector3(x, 0.95, 1.55), w:70, h:18, kind:'term'});
 }
 makeTerminal(-9.4, '候选版本');
 makeTerminal(9.4, '上线');
@@ -480,7 +482,7 @@ renderer.domElement.addEventListener('wheel', e => {
   camTarget.radius = Math.min(34, Math.max(10, camTarget.radius + e.deltaY*0.012));
 }, {passive:false});
 renderer.domElement.addEventListener('dblclick', () => {
-  camTarget.theta = 0.18; camTarget.phi = 0.95; camTarget.radius = 25.5; camTarget.ty = 1.55;
+  camTarget.theta = CAM0.theta; camTarget.phi = CAM0.phi; camTarget.radius = CAM0.radius; camTarget.ty = CAM0.ty;
 });
 
 function animate(){
