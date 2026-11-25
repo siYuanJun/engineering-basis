@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D 判定分叉</title>
+<style>
+  :root{
+    --bg:#0B1220; --panel:rgba(17,26,43,.72); --line:rgba(120,150,190,.18);
+    --text:#E6EDF7; --dim:#93A4B8; --hi:#FFD166;
+    --font:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{background:#060B14}
+  html,body{margin:0;height:100%;background:radial-gradient(circle at 50% 44%, #142442 0%, #0B1220 54%, #060B14 100%);color:var(--text);font-family:var(--font);overflow:hidden}
+  #stage{position:fixed;inset:0}
+  .hud{position:fixed;inset:0;pointer-events:none}
+  .tl{position:absolute;left:4vw;top:6vh;max-width:32vw}
+  .eyebrow{font-size:12px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
+  h1{font-size:clamp(22px,2.4vw,34px);font-weight:600;margin:.55em 0 .3em;line-height:1.25}
+  .sub{font-size:13.5px;color:var(--dim);line-height:1.7}
+  .tr{position:absolute;right:3vw;top:5vh;display:flex;gap:9px;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end}
+  button{font-family:var(--font);font-size:12.5px;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer;backdrop-filter:blur(10px);transition:.18s}
+  button:hover{border-color:rgba(255,209,102,.5);color:#fff}
+  button.on{background:rgba(255,209,102,.16);border-color:rgba(255,209,102,.6)}
+  .sep{width:1px;height:22px;background:var(--line);align-self:center;margin:0 3px}
+  .card{position:absolute;right:3vw;top:13vh;width:min(340px,30vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px 19px;backdrop-filter:blur(14px);pointer-events:auto}
+  .card .k{font-size:11px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+  .card .t{font-size:16px;font-weight:600;margin:7px 0 5px}
+  .card .b{font-size:12.5px;line-height:1.75;color:#C7D3E3}
+  .card .out{margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#C7D3E3;background:rgba(7,12,22,.55);border:1px solid var(--line);border-radius:8px;padding:8px 10px;white-space:pre;overflow-x:auto;max-height:120px}
+  .step{position:absolute;left:4vw;bottom:6vh;width:min(420px,38vw);border-left:2px solid var(--hi);padding:2px 0 2px 15px}
+  .step .n{font-size:11.5px;color:var(--hi);letter-spacing:.14em}
+  .step .h{font-size:15px;font-weight:600;margin:6px 0 4px}
+  .step .p{font-size:12.5px;color:#C7D3E3;line-height:1.7}
+  .hint{position:absolute;left:50%;bottom:2.2vh;transform:translateX(-50%);font-size:11.5px;color:var(--dim)}
+  .labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .label{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:12px;color:#DCE6F4;text-shadow:0 1px 8px rgba(0,0,0,.7);transition:opacity .18s}
+  .label.head{font-size:13px;font-weight:600;letter-spacing:.04em;color:#fff}
+  .label.head .dim{color:#8FB4E8;font-weight:500;margin-right:7px}
+  .label.exit{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.06em}
+  .label.term{font-size:11px;color:#93A4B8;letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div class="labels" id="labels"></div>
+<div class="hud">
+  <div class="tl">
+    <div class="eyebrow" id="eyebrow">3D 判定</div>
+    <h1 id="title"></h1>
+    <div class="sub" id="sub"></div>
+  </div>
+  <div class="tr" id="cases"></div>
+  <div class="card" id="card">
+    <div class="k" id="cardK">当前</div>
+    <div class="t" id="cardT">选择一个样例</div>
+    <div class="b" id="cardB">选择上面的样例，看这条改动判到哪个出口。</div>
+    <div class="out" id="cardO" style="display:none"></div>
+  </div>
+  <div class="step" id="step" style="display:none">
+    <div class="n" id="stepN"></div>
+    <div class="h" id="stepH"></div>
+    <div class="p" id="stepP"></div>
+  </div>
+  <div class="hint">拖拽旋转 · 滚轮缩放 · 双击复位 · 点出口看判据</div>
+</div>
+<script type="importmap">
+{"imports":{"three":"./three.module.min.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const SPEC = {"title": "合入前，一条改动判到哪", "eyebrow": "REVIEW-LOOP · 3D 分叉", "subtitle": "同一条判定线，三个出口：通过、阻断、升级。退出码只区分能否合入，具体处置看 verdict。", "startLabel": "一条改动", "checkpoint": {"name": "审查判定", "rule": "只看缺陷与影响面，风格类意见不进清单；每条发现要带位置、主张、证据、复核方式。", "detail": "判定不依赖评审人记忆：条目状态、严重级、轮次都能复核。"}, "branches": [{"id": "APPROVE", "name": "通过", "exit": 0, "color": "#3DDC97", "x": 7.2, "z": 0, "rule": "无 Important 未关闭；历史问题写明另开单即可放行。", "detail": "有 open 不等于阻断，旧账不全部算在这次改动上。"}, {"id": "BLOCK", "name": "阻断", "exit": 3, "color": "#FF6B5A", "x": 3.4, "z": -4.6, "rule": "存在未关闭的 Important；先改，不进入合并。", "detail": "阻断只针对会影响这次改动的缺陷，不针对风格偏好。"}, {"id": "ESCALATE", "name": "升级", "exit": 3, "color": "#FFB454", "x": 3.4, "z": 4.6, "rule": "同一问题超过三轮；停手重想方案，不再继续磨。", "detail": "升级不是再提一轮意见，而是把问题交回方案层。"}], "cases": [{"id": "A", "label": "一条未关闭", "title": "一条真实缺陷未关闭", "branch": "BLOCK", "verdict": "BLOCK", "exit": 3, "reason": "1 条未关闭（Important 1），另有 0 条历史问题未给处置说明", "metrics": "total 2 · open 1 · important 1", "intro": "token 失效时接口仍返回 200，前端当成成功。一条 Important 未关闭即阻断。", "stopNote": "另一条 Nit 已修复，不参与阻断。先改这条，再重新判定。"}, {"id": "B", "label": "已给处置", "title": "有历史问题，但已给处置", "branch": "APPROVE", "verdict": "APPROVE", "exit": 0, "reason": "无阻塞项；1 条历史问题已注明另开单", "metrics": "total 3 · open 1 · important 0", "intro": "一条历史遗留问题写明另开单，没有 Important 未关闭。", "stopNote": "有 open 不是阻断理由；审查不把旧账全算在这次改动上。"}, {"id": "C", "label": "磨到第四轮", "title": "同一问题磨到第四轮", "branch": "ESCALATE", "verdict": "ESCALATE", "exit": 3, "reason": "第 4 轮仍有 1 条 Important 未关闭，停手重想方案", "metrics": "total 2 · open 1 · important 1", "intro": "同一条 Important 改到第 4 轮仍未关闭。", "stopNote": "超过三轮不再继续提意见，交回方案层重新想。"}]};
+if (location.search.includes('embed')) document.body.classList.add('embed');
+const stage = document.getElementById('stage');
+const labelBox = document.getElementById('labels');
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0B1220, 0.024);
+
+const camera = new THREE.PerspectiveCamera(44, innerWidth/innerHeight, 0.1, 200);
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+const COMPACT = innerWidth < 1100;
+const CAM0 = {theta: 0.06, phi: COMPACT ? 0.66 : 0.68, radius: COMPACT ? 19.2 : 22.4, ty: 0.95};
+const cam = {...CAM0};
+const camTarget = {...cam};
+function applyCam(){
+  const sp = Math.sin(cam.phi);
+  camera.position.set(cam.radius*sp*Math.sin(cam.theta), cam.radius*Math.cos(cam.phi), cam.radius*sp*Math.cos(cam.theta));
+  camera.lookAt(1.0, cam.ty, 0);
+}
+applyCam();
+
+scene.add(new THREE.HemisphereLight(0xA8C0E0, 0x101B2D, 1.15));
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
+key.position.set(5, 14, 9);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x6FA8FF, 0.8);
+rim.position.set(-7, 7, -9);
+scene.add(rim);
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(44, 32), new THREE.MeshStandardMaterial({color:0x122036, roughness:.6, metalness:.35}));
+floor.rotation.x = -Math.PI/2; floor.position.y = -0.02;
+scene.add(floor);
+const grid = new THREE.GridHelper(40, 40, 0x27405F, 0x18283D);
+scene.add(grid);
+
+const CP = Object.assign({x:-1, z:0, name:'判定'}, SPEC.checkpoint || {});
+const START = {x: CP.x - 5.6, z: 0};
+const BRANCHES = SPEC.branches || [];
+const C_IDLE = 0x35506F;
+
+function makeLabel(cls, html){
+  const el = document.createElement('div');
+  el.className = 'label ' + cls;
+  el.innerHTML = html;
+  labelBox.appendChild(el);
+  return el;
+}
+const labels = [];
+function addLabel(cls, html, get, kind){
+  const el = makeLabel(cls, html);
+  labels.push({el, get, kind});
+  return el;
+}
+
+// 轨道段
+function makeRail(from, to, color, opacity){
+  const dx = to.x - from.x, dz = to.z - from.z;
+  const len = Math.hypot(dx, dz);
+  const mat = new THREE.MeshStandardMaterial({color, roughness:.5, metalness:.35, transparent:true, opacity});
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(len, .1, 1.05), mat);
+  rail.position.set((from.x+to.x)/2, .04, (from.z+to.z)/2);
+  rail.rotation.y = -Math.atan2(dz, dx);
+  scene.add(rail);
+  const line = new THREE.Mesh(new THREE.BoxGeometry(len, .012, .07), new THREE.MeshBasicMaterial({color: color, transparent:true, opacity:.55}));
+  line.position.set((from.x+to.x)/2, .11, (from.z+to.z)/2);
+  line.rotation.y = -Math.atan2(dz, dx);
+  scene.add(line);
+  return rail;
+}
+
+// 主轨与三条出口轨
+makeRail(START, {x:CP.x, z:CP.z}, 0x1E3352, .95);
+const outletPos = {};
+BRANCHES.forEach(b => {
+  const ox = b.x != null ? b.x : (b.id === 'APPROVE' ? 7.6 : CP.x);
+  const oz = b.z != null ? b.z : (b.id === 'BLOCK' ? -5 : b.id === 'ESCALATE' ? 5 : 0);
+  outletPos[b.id] = {x:ox, z:oz};
+  makeRail({x:CP.x, z:CP.z}, {x:ox, z:oz}, b.color || 0x2C4666, .6);
+});
+
+// 判定台
+const cpGroup = new THREE.Group();
+cpGroup.position.set(CP.x, 0, CP.z);
+const cpMat = new THREE.MeshStandardMaterial({color:0x223A57, roughness:.35, metalness:.5, emissive:0x122A46, emissiveIntensity:.45});
+const cpBase = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, .2, 6), cpMat);
+cpBase.position.y = .12;
+cpGroup.add(cpBase);
+const cpRing = new THREE.Mesh(new THREE.TorusGeometry(1.27, .05, 12, 64), new THREE.MeshBasicMaterial({color:0x6FA8FF, transparent:true, opacity:.7}));
+cpRing.rotation.x = Math.PI/2; cpRing.position.y = .24;
+cpGroup.add(cpRing);
+const cpLight = new THREE.PointLight(0x6FA8FF, 1.4, 7);
+cpLight.position.y = 1.4;
+cpGroup.add(cpLight);
+scene.add(cpGroup);
+cpGroup.userData = {kind:'checkpoint', spec:CP};
+addLabel('head', `<span class="dim">判定</span>${CP.name}`, () => new THREE.Vector3(CP.x, 2.55, CP.z), 'cp');
+
+// 出口
+const outletGroups = {};
+const outletState = {};
+BRANCHES.forEach(b => {
+  const {x, z} = outletPos[b.id];
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = 0;
+  g.userData = {kind:'outlet', id:b.id, spec:b};
+
+  const col = new THREE.Color(b.color || 0x4A6FA5);
+  const baseMat = new THREE.MeshStandardMaterial({color:0x1B2D44, roughness:.5, metalness:.35, emissive:0x101D2E, emissiveIntensity:.4});
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, .18, 6), baseMat);
+  base.position.y = .09;
+  g.add(base);
+
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.18, .055, 10, 56), new THREE.MeshBasicMaterial({color:C_IDLE, transparent:true, opacity:.8}));
+  ring.rotation.x = Math.PI/2; ring.position.y = .2;
+  g.add(ring);
+
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(.5, .9, 2.5, 24, 1, true),
+    new THREE.MeshBasicMaterial({color:C_IDLE, transparent:true, opacity:.07, side:THREE.DoubleSide})
+  );
+  shaft.position.y = 1.4;
+  g.add(shaft);
+
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(.13, 18, 18), new THREE.MeshBasicMaterial({color:C_IDLE}));
+  lamp.position.set(0, 2.45, 0);
+  g.add(lamp);
+
+  g.userData.ring = ring;
+  g.userData.col = shaft;
+  g.userData.lamp = lamp;
+  g.userData.baseMat = baseMat;
+  g.userData.color = col;
+
+  scene.add(g);
+  outletGroups[b.id] = g;
+  outletState[b.id] = 'idle';
+
+  addLabel('head', `<span class="dim">${b.id}</span>${b.name}`, () => new THREE.Vector3(x, 3.2, z), 'out');
+  addLabel('exit', `exit ${b.exit}`, () => new THREE.Vector3(x, 2.88, z), 'exit');
+});
+
+// 起点与终点文字
+addLabel('term', SPEC.startLabel || '一条改动', () => new THREE.Vector3(START.x, 1.15, 0), 'term');
+
+// 块
+const block = new THREE.Mesh(new THREE.BoxGeometry(.82, .82, .82),
+  new THREE.MeshStandardMaterial({color:0xFFD166, emissive:0xFFD166, emissiveIntensity:.55, roughness:.4, metalness:.15}));
+block.position.set(START.x, .95, 0);
+scene.add(block);
+const glow = new THREE.Mesh(new THREE.BoxGeometry(1.06, 1.06, 1.06), new THREE.MeshBasicMaterial({color:0xFFD166, transparent:true, opacity:.12}));
+block.add(glow);
+block.add(new THREE.PointLight(0xFFD166, 1.1, 5));
+
+// HUD
+document.getElementById('title').textContent = SPEC.title || '';
+document.getElementById('sub').textContent = SPEC.subtitle || '';
+document.getElementById('eyebrow').textContent = SPEC.eyebrow || '3D';
+const CASES = SPEC.cases || [];
+const casesBox = document.getElementById('cases');
+const caseBtns = [];
+CASES.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.textContent = c.label || c.id;
+  b.onclick = () => startCase(i);
+  casesBox.appendChild(b);
+  caseBtns.push(b);
+});
+const sep = document.createElement('div'); sep.className='sep'; casesBox.appendChild(sep);
+const btnPlay = document.createElement('button'); btnPlay.textContent='播放'; btnPlay.onclick = () => startCase(activeCase < 0 ? 0 : activeCase);
+casesBox.appendChild(btnPlay);
+const btnReset = document.createElement('button'); btnReset.textContent='复位'; btnReset.onclick = reset;
+casesBox.appendChild(btnReset);
+
+let activeCase = -1, run = null;
+
+function resetOutlet(id){
+  const g = outletGroups[id]; if(!g) return;
+  outletState[id] = 'idle';
+  g.userData.lamp.material.color.set(C_IDLE);
+  g.userData.ring.material.color.set(C_IDLE);
+  g.userData.col.material.color.set(C_IDLE);
+  g.userData.col.material.opacity = .07;
+  g.userData.baseMat.emissiveIntensity = .4;
+}
+function markOutlet(id){
+  const g = outletGroups[id]; if(!g) return;
+  outletState[id] = 'hit';
+  g.userData.lamp.material.color.copy(g.userData.color);
+  g.userData.ring.material.color.copy(g.userData.color);
+  g.userData.col.material.color.copy(g.userData.color);
+  g.userData.col.material.opacity = .24;
+  g.userData.baseMat.emissive.copy(g.userData.color);
+  g.userData.baseMat.emissiveIntensity = .7;
+}
+function reset(){
+  activeCase = -1; run = null;
+  block.position.set(START.x, .95, 0);
+  BRANCHES.forEach(b => resetOutlet(b.id));
+  cpMat.emissive.set(0x1B3555); cpMat.emissiveIntensity = .5;
+  caseBtns.forEach(b => b.classList.remove('on'));
+  document.getElementById('cardK').textContent = '当前';
+  document.getElementById('cardT').textContent = '选择一个样例';
+  document.getElementById('cardB').textContent = '选择上面的样例，看这条改动判到哪个出口。';
+  document.getElementById('cardO').style.display = 'none';
+  document.getElementById('step').style.display = 'none';
+}
+function showCard(kicker, title, body, out){
+  document.getElementById('cardK').textContent = kicker;
+  document.getElementById('cardT').textContent = title;
+  document.getElementById('cardB').textContent = body || '';
+  const o = document.getElementById('cardO');
+  if (out) { o.style.display='block'; o.textContent = out; } else { o.style.display='none'; }
+}
+
+function startCase(i){
+  reset();
+  activeCase = i;
+  caseBtns[i].classList.add('on');
+  const c = CASES[i];
+  run = {t0: performance.now(), c, to: null, done: false};
+  const st = document.getElementById('step');
+  st.style.display = 'block';
+  document.getElementById('stepN').textContent = '起点';
+  document.getElementById('stepH').textContent = c.label || '';
+  document.getElementById('stepP').textContent = c.intro || '改动进入审查判定。';
+  showCard('样例 ' + (c.id || (i+1)), c.title || c.label || '', c.intro || '', null);
+}
+
+// 时间轴：0-1.3s 走到判定台；1.3-2.0 判定；2.0-3.4 走向出口
+const T1 = 1300, T2 = 700, T3 = 1400;
+const TOTAL = T1 + T2 + T3;
+
+function updateRun(now){
+  if (!run) return;
+  const r = run, c = r.c;
+  const el = now - r.t0;
+  const to = outletPos[c.branch] || {x:CP.x, z:CP.z};
+  const ddx = to.x - CP.x, ddz = to.z - CP.z, dl = Math.hypot(ddx, ddz) || 1;
+  const stopX = to.x - ddx/dl * 1.25, stopZ = to.z - ddz/dl * 1.25;
+
+  if (el < T1) {
+    const t = el / T1;
+    const e = t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+    block.position.x = START.x + (CP.x - START.x) * e;
+    block.position.z = 0;
+    block.rotation.y += .012;
+  } else if (el < T1 + T2) {
+    block.position.set(CP.x, .95, CP.z);
+    const pulse = .55 + Math.sin((el - T1) / T2 * Math.PI) * .75;
+    cpMat.emissive.set(0x7FB6FF);
+    cpMat.emissiveIntensity = pulse;
+    cpRing.scale.setScalar(1 + Math.sin((el - T1) / T2 * Math.PI) * .08);
+    if (!r.ruled) {
+      r.ruled = true;
+      showCard('判定 · ' + c.verdict, c.verdict + '：' + (c.title || ''), c.reason || '', `exit ${c.exit}\n${c.metrics || ''}`);
+      document.getElementById('stepN').textContent = '判定';
+      document.getElementById('stepH').textContent = CP.name;
+      document.getElementById('stepP').textContent = (SPEC.checkpoint && SPEC.checkpoint.rule) || '';
+    }
+  } else {
+    cpMat.emissive.set(0x122A46);
+    cpMat.emissiveIntensity = .45;
+    cpRing.scale.setScalar(1);
+    const t = Math.min(1, (el - T1 - T2) / T3);
+    const e = t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+    block.position.x = CP.x + (stopX - CP.x) * e;
+    block.position.z = CP.z + (stopZ - CP.z) * e;
+    block.position.y = .95 + Math.sin(Math.PI * t) * .18;
+    if (t > .45 && !r.hit) {
+      r.hit = true;
+      markOutlet(c.branch);
+      const b = BRANCHES.find(x => x.id === c.branch) || {};
+      document.getElementById('stepN').textContent = '出口';
+      document.getElementById('stepH').textContent = (b.name || c.branch) + ' · exit ' + c.exit;
+      document.getElementById('stepP').textContent = b.rule || c.stopNote || '';
+    }
+  }
+
+  if (el >= TOTAL && !r.done) {
+    r.done = true;
+    block.position.set(stopX, .95, stopZ);
+    const b = BRANCHES.find(x => x.id === c.branch) || {};
+    showCard(c.verdict + ' · exit ' + c.exit, (b.name || c.branch), b.rule || c.stopNote || '', c.metrics || null);
+    document.getElementById('stepN').textContent = '停在出口';
+    document.getElementById('stepH').textContent = b.name || c.branch;
+    document.getElementById('stepP').textContent = c.stopNote || b.rule || '';
+  }
+}
+
+function project(v){
+  const p = v.clone().project(camera);
+  return {x:(p.x*0.5+0.5)*innerWidth, y:(-p.y*0.5+0.5)*innerHeight, vis:p.z < 1};
+}
+function layoutLabels(){
+  for (const it of labels){
+    const s = project(it.get());
+    if (!s.vis) { it.el.style.opacity = 0; continue; }
+    it.el.style.left = s.x + 'px';
+    it.el.style.top = s.y + 'px';
+    it.el.style.opacity = .95;
+  }
+}
+
+// 交互
+let dragging=false, lastX=0, lastY=0, moved=0;
+const ray = new THREE.Raycaster();
+const pt = new THREE.Vector2();
+function pick(ev){
+  pt.x = (ev.clientX/innerWidth)*2 - 1;
+  pt.y = -(ev.clientY/innerHeight)*2 + 1;
+  ray.setFromCamera(pt, camera);
+  const objs = [...cpGroup.children, ...Object.values(outletGroups).flatMap(g => g.children)];
+  const hit = ray.intersectObjects(objs, false)[0];
+  if (!hit) return null;
+  let o = hit.object;
+  while (o && !o.userData.kind) o = o.parent;
+  return o && o.userData.kind ? o : null;
+}
+renderer.domElement.addEventListener('pointerdown', e => {
+  dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY;
+  renderer.domElement.setPointerCapture(e.pointerId);
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dx = e.clientX-lastX, dy = e.clientY-lastY;
+  moved += Math.abs(dx)+Math.abs(dy);
+  lastX = e.clientX; lastY = e.clientY;
+  camTarget.theta -= dx*0.006;
+  camTarget.phi = Math.min(1.32, Math.max(.3, camTarget.phi - dy*0.004));
+});
+renderer.domElement.addEventListener('pointerup', e => {
+  dragging = false;
+  if (moved < 6) {
+    const o = pick(e);
+    if (!o) return;
+    if (o.userData.kind === 'checkpoint') {
+      showCard('判定口径', CP.name, CP.rule || '', CP.detail || null);
+    } else if (o.userData.kind === 'outlet') {
+      const b = o.userData.spec;
+      showCard('出口 · ' + b.id, b.name + ' · exit ' + b.exit, b.rule || '', b.detail || null);
+    }
+  }
+});
+renderer.domElement.addEventListener('wheel', e => {
+  e.preventDefault();
+  camTarget.radius = Math.min(32, Math.max(9, camTarget.radius + e.deltaY*0.012));
+}, {passive:false});
+renderer.domElement.addEventListener('dblclick', () => Object.assign(camTarget, CAM0));
+
+function animate(){
+  requestAnimationFrame(animate);
+  const now = performance.now();
+  cam.theta += (camTarget.theta-cam.theta)*0.08;
+  cam.phi += (camTarget.phi-cam.phi)*0.08;
+  cam.radius += (camTarget.radius-cam.radius)*0.08;
+  cam.ty += (camTarget.ty-cam.ty)*0.08;
+  applyCam();
+  updateRun(now);
+  layoutLabels();
+  renderer.render(scene, camera);
+}
+animate();
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

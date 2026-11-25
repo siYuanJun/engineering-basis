@@ -1,0 +1,81 @@
+{
+  "title": "合入前，一条改动判到哪",
+  "eyebrow": "REVIEW-LOOP · 3D 分叉",
+  "subtitle": "同一条判定线，三个出口：通过、阻断、升级。退出码只区分能否合入，具体处置看 verdict。",
+  "startLabel": "一条改动",
+  "checkpoint": {
+    "name": "审查判定",
+    "rule": "只看缺陷与影响面，风格类意见不进清单；每条发现要带位置、主张、证据、复核方式。",
+    "detail": "判定不依赖评审人记忆：条目状态、严重级、轮次都能复核。"
+  },
+  "branches": [
+    {
+      "id": "APPROVE",
+      "name": "通过",
+      "exit": 0,
+      "color": "#3DDC97",
+      "x": 7.2,
+      "z": 0,
+      "rule": "无 Important 未关闭；历史问题写明另开单即可放行。",
+      "detail": "有 open 不等于阻断，旧账不全部算在这次改动上。"
+    },
+    {
+      "id": "BLOCK",
+      "name": "阻断",
+      "exit": 3,
+      "color": "#FF6B5A",
+      "x": 3.4,
+      "z": -4.6,
+      "rule": "存在未关闭的 Important；先改，不进入合并。",
+      "detail": "阻断只针对会影响这次改动的缺陷，不针对风格偏好。"
+    },
+    {
+      "id": "ESCALATE",
+      "name": "升级",
+      "exit": 3,
+      "color": "#FFB454",
+      "x": 3.4,
+      "z": 4.6,
+      "rule": "同一问题超过三轮；停手重想方案，不再继续磨。",
+      "detail": "升级不是再提一轮意见，而是把问题交回方案层。"
+    }
+  ],
+  "cases": [
+    {
+      "id": "A",
+      "label": "一条未关闭",
+      "title": "一条真实缺陷未关闭",
+      "branch": "BLOCK",
+      "verdict": "BLOCK",
+      "exit": 3,
+      "reason": "1 条未关闭（Important 1），另有 0 条历史问题未给处置说明",
+      "metrics": "total 2 · open 1 · important 1",
+      "intro": "token 失效时接口仍返回 200，前端当成成功。一条 Important 未关闭即阻断。",
+      "stopNote": "另一条 Nit 已修复，不参与阻断。先改这条，再重新判定。"
+    },
+    {
+      "id": "B",
+      "label": "已给处置",
+      "title": "有历史问题，但已给处置",
+      "branch": "APPROVE",
+      "verdict": "APPROVE",
+      "exit": 0,
+      "reason": "无阻塞项；1 条历史问题已注明另开单",
+      "metrics": "total 3 · open 1 · important 0",
+      "intro": "一条历史遗留问题写明另开单，没有 Important 未关闭。",
+      "stopNote": "有 open 不是阻断理由；审查不把旧账全算在这次改动上。"
+    },
+    {
+      "id": "C",
+      "label": "磨到第四轮",
+      "title": "同一问题磨到第四轮",
+      "branch": "ESCALATE",
+      "verdict": "ESCALATE",
+      "exit": 3,
+      "reason": "第 4 轮仍有 1 条 Important 未关闭，停手重想方案",
+      "metrics": "total 2 · open 1 · important 1",
+      "intro": "同一条 Important 改到第 4 轮仍未关闭。",
+      "stopNote": "超过三轮不再继续提意见，交回方案层重新想。"
+    }
+  ]
+}

@@ -26,6 +26,18 @@
   <p class="lead">review-loop 把 AI 生成代码的合入审查收敛成三种结论：通过、阻断、升级。下面三个样例给的是输入清单，可以直接跑出同样的结果。</p>
   <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
 
+  <figure class="viz">
+    <div class="frame">
+      <a class="fallback" href="../viz/review-fork.html" target="_blank">
+        <img src="../viz/review-fork.jpg" alt="合入判定 3D 分叉：一条改动停在阻断出口">
+      </a>
+      <div class="ph">正在载入 3D 场景…</div>
+      <iframe src="../viz/review-fork.html?embed=1" title="合入判定 3D 分叉" loading="lazy" onload="this.classList.add('ready')"></iframe>
+    </div>
+    <figcaption>同一条判定线，三个出口：阻断、通过、升级。BLOCK 与 ESCALATE 的退出码都是 3，退出码只区分能否合入，具体处置看 verdict。判定由 check.py 实跑生成。</figcaption>
+  </figure>
+
+
   <h2 id="s1"><span class="n">01</span>它解决什么</h2>
   <p>AI 写代码快，评审跟不上。常见两种失效：一是所有意见都提，噪声淹没真问题；二是同一处改到第四轮还在来回。这个工程只做一件事——给“这条改动能不能合”一个可复核的判定，并把意见压到能收口的数量。</p>
   <ul>
