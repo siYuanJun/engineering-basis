@@ -87,7 +87,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 
 const COMPACT = innerWidth < 1100;
-const CAM0 = {theta: 0.06, phi: COMPACT ? 0.66 : 0.68, radius: COMPACT ? 19.2 : 22.4, ty: 0.95};
+const CAM0 = {theta: 0.06, phi: COMPACT ? 0.66 : 0.68, radius: COMPACT ? 20.4 : 23.8, ty: 1.1};
 const cam = {...CAM0};
 const camTarget = {...cam};
 function applyCam(){
@@ -218,6 +218,38 @@ BRANCHES.forEach(b => {
   addLabel('exit', `exit ${b.exit}`, () => new THREE.Vector3(x, 2.88, z), 'exit');
 });
 
+// 回边（可选）：某个出口退回给人或另一个节点
+const LOOP = SPEC.loop && SPEC.loop.to ? SPEC.loop : null;
+let loopNode = null, loopLamp = null, loopRing = null, loopRule = '';
+if (LOOP) {
+  const from = outletPos[LOOP.from] || {x:CP.x, z:CP.z};
+  const to = LOOP.to;
+  const dx = to.x - from.x, dz = to.z - from.z, len = Math.hypot(dx, dz);
+  const ang = -Math.atan2(dz, dx);
+  const dots = Math.max(6, Math.floor(len / .62));
+  for (let i = 0; i < dots; i++) {
+    const t = (i + .5) / dots;
+    const seg = new THREE.Mesh(new THREE.BoxGeometry(.28, .02, .09),
+      new THREE.MeshBasicMaterial({color:0x8FA6C4, transparent:true, opacity:.5}));
+    seg.position.set(from.x + dx*t, .13, from.z + dz*t);
+    seg.rotation.y = ang;
+    scene.add(seg);
+  }
+  const g = new THREE.Group();
+  g.position.set(to.x, 0, to.z);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(.95, .95, .16, 6),
+    new THREE.MeshStandardMaterial({color:0x1B2D44, roughness:.5, metalness:.35}));
+  base.position.y = .08; g.add(base);
+  loopRing = new THREE.Mesh(new THREE.TorusGeometry(.98, .05, 10, 48),
+    new THREE.MeshBasicMaterial({color:C_IDLE, transparent:true, opacity:.7}));
+  loopRing.rotation.x = Math.PI/2; loopRing.position.y = .18; g.add(loopRing);
+  loopLamp = new THREE.Mesh(new THREE.SphereGeometry(.12, 16, 16), new THREE.MeshBasicMaterial({color:C_IDLE}));
+  loopLamp.position.y = 2.2; g.add(loopLamp);
+  scene.add(g);
+  loopNode = g;
+  addLabel('head', `<span class="dim">回</span>${to.name}`, () => new THREE.Vector3(to.x, 2.55, to.z), 'loop');
+}
+
 // 起点与终点文字
 addLabel('term', SPEC.startLabel || '一条改动', () => new THREE.Vector3(START.x, 1.15, 0), 'term');
 
@@ -306,13 +338,14 @@ function startCase(i){
 }
 
 // 时间轴：0-1.3s 走到判定台；1.3-2.0 判定；2.0-3.4 走向出口
-const T1 = 1300, T2 = 700, T3 = 1400;
-const TOTAL = T1 + T2 + T3;
+const T1 = 1300, T2 = 700, T3 = 1400, T4 = 1200;
 
 function updateRun(now){
   if (!run) return;
   const r = run, c = r.c;
   const el = now - r.t0;
+  const isLoop = LOOP && c.branch === LOOP.from;
+  const TOTAL = T1 + T2 + T3 + (isLoop ? T4 : 0);
   const to = outletPos[c.branch] || {x:CP.x, z:CP.z};
   const ddx = to.x - CP.x, ddz = to.z - CP.z, dl = Math.hypot(ddx, ddz) || 1;
   const stopX = to.x - ddx/dl * 1.25, stopZ = to.z - ddz/dl * 1.25;
@@ -336,7 +369,7 @@ function updateRun(now){
       document.getElementById('stepH').textContent = CP.name;
       document.getElementById('stepP').textContent = (SPEC.checkpoint && SPEC.checkpoint.rule) || '';
     }
-  } else {
+  } else if (el < T1 + T2 + T3) {
     cpMat.emissive.set(0x122A46);
     cpMat.emissiveIntensity = .45;
     cpRing.scale.setScalar(1);
@@ -353,16 +386,40 @@ function updateRun(now){
       document.getElementById('stepH').textContent = (b.name || c.branch) + ' · exit ' + c.exit;
       document.getElementById('stepP').textContent = b.rule || c.stopNote || '';
     }
+  } else if (isLoop) {
+    const t = Math.min(1, (el - T1 - T2 - T3) / T4);
+    const e = t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+    const lt = LOOP.to;
+    block.position.x = stopX + (lt.x - stopX) * e;
+    block.position.z = stopZ + (lt.z - stopZ) * e;
+    block.position.y = .95 + Math.sin(Math.PI * t) * .16;
+    if (t > .3 && !r.ret) {
+      r.ret = true;
+      if (loopLamp) loopLamp.material.color.set(0xFFB454);
+      if (loopRing) loopRing.material.color.set(0xFFB454);
+      document.getElementById('stepN').textContent = '回边';
+      document.getElementById('stepH').textContent = '退回：' + lt.name;
+      document.getElementById('stepP').textContent = (LOOP.rule || '');
+    }
   }
 
   if (el >= TOTAL && !r.done) {
     r.done = true;
-    block.position.set(stopX, .95, stopZ);
+    if (isLoop) block.position.set(LOOP.to.x, .95, LOOP.to.z);
+    else block.position.set(stopX, .95, stopZ);
     const b = BRANCHES.find(x => x.id === c.branch) || {};
-    showCard(c.verdict + ' · exit ' + c.exit, (b.name || c.branch), b.rule || c.stopNote || '', c.metrics || null);
-    document.getElementById('stepN').textContent = '停在出口';
-    document.getElementById('stepH').textContent = b.name || c.branch;
-    document.getElementById('stepP').textContent = c.stopNote || b.rule || '';
+    if (isLoop) {
+      showCard(c.verdict + ' · exit ' + c.exit, (b.name || c.branch) + ' → ' + LOOP.to.name,
+        LOOP.rule || c.stopNote || '', c.metrics || null);
+      document.getElementById('stepN').textContent = '停在回边终点';
+      document.getElementById('stepH').textContent = LOOP.to.name;
+      document.getElementById('stepP').textContent = c.stopNote || LOOP.rule || '';
+    } else {
+      showCard(c.verdict + ' · exit ' + c.exit, (b.name || c.branch), b.rule || c.stopNote || '', c.metrics || null);
+      document.getElementById('stepN').textContent = '停在出口';
+      document.getElementById('stepH').textContent = b.name || c.branch;
+      document.getElementById('stepP').textContent = c.stopNote || b.rule || '';
+    }
   }
 }
 

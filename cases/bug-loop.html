@@ -26,6 +26,18 @@
   <p class="lead">bug-loop 把接单、定位、修复、反馈、关闭拆成六个阶段，每个阶段有明确的落地条件。下面三个样例走同一套闸门判定，可以直接跑出同样的结果。</p>
   <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
 
+  <figure class="viz">
+    <div class="frame">
+      <a class="fallback" href="../viz/bug-fork.html" target="_blank">
+        <img src="../viz/bug-fork.jpg" alt="缺陷闭环 3D 分叉：需求类归因退回人拍板">
+      </a>
+      <div class="ph">正在载入 3D 场景…</div>
+      <iframe src="../viz/bug-fork.html?embed=1" title="缺陷闭环 3D 分叉" loading="lazy" onload="this.classList.add('ready')"></iframe>
+    </div>
+    <figcaption>三个出口：写回解决、等人拍板、交回提报人。需求类归因不从出口结束，而是沿回边退回人拍板；HOLD_OWNER 与 HANDOFF 的退出码都是 3，处置看 verdict。</figcaption>
+  </figure>
+
+
   <h2 id="s1"><span class="n">01</span>它解决什么</h2>
   <p>缺陷处理最含糊的是收口。代码改完不等于单能结；归因是代码问题还是需求问题，处理方式完全不同；关闭权限不在开发手里。没有固定的落地条件，就会出现“改完了但不敢关”“关了又被激活”“需求问题用代码绕过”。</p>
   <ul>

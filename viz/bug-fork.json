@@ -1,0 +1,87 @@
+{
+  "title": "缺陷改完，算不算完",
+  "eyebrow": "BUG-LOOP · 3D 分叉",
+  "subtitle": "代码改完不等于单能结。归因决定谁能落地：写回、等人拍板、交回提报人。结论来自 bug_gate 实跑。",
+  "startLabel": "一条缺陷单",
+  "checkpoint": {
+    "name": "归因与落地",
+    "rule": "归因先定性：代码类还是需求类。需求类一律人拍板，关闭交给提报人。",
+    "detail": "改动重量分档，涉及表结构与数据迁移由人主导；AI 只做判定与提醒。"
+  },
+  "branches": [
+    {
+      "id": "RESOLVE",
+      "name": "写回解决",
+      "exit": 0,
+      "color": "#3DDC97",
+      "x": 7.2,
+      "z": 0,
+      "rule": "代码类归因且自测通过，可写回解决。",
+      "detail": "留下复现步骤与验证方式，单才算真正收口。"
+    },
+    {
+      "id": "HOLD_OWNER",
+      "name": "等人拍板",
+      "exit": 3,
+      "color": "#FFB454",
+      "x": 3.4,
+      "z": -4.6,
+      "rule": "归到需求问题（bydesign），停下来等人拍板。",
+      "detail": "需求边界不能由开发自己下结论，否则会被代码悄悄改写。"
+    },
+    {
+      "id": "HANDOFF",
+      "name": "交回提报人",
+      "exit": 3,
+      "color": "#8FA6C4",
+      "x": 3.4,
+      "z": 4.6,
+      "rule": "关闭只由提报人操作，AI 提醒到位即止。",
+      "detail": "判定能做，关闭权限不在开发手里。"
+    }
+  ],
+  "loop": {
+    "from": "HOLD_OWNER",
+    "to": {
+      "x": -2.6,
+      "z": -7.4,
+      "name": "人拍板"
+    },
+    "rule": "归因是需求边界，退回产品与提报人；开发不替产品做决定。"
+  },
+  "cases": [
+    {
+      "id": "A",
+      "label": "代码问题",
+      "title": "代码问题，自测通过",
+      "branch": "RESOLVE",
+      "verdict": "RESOLVE",
+      "exit": 0,
+      "reason": "代码类归因且自测通过，可写回解决",
+      "intro": "归因 fixed，自测通过，改动属于可直接撤回的一档。",
+      "stopNote": "写回复现步骤与验证方式，再关单。"
+    },
+    {
+      "id": "B",
+      "label": "归到需求",
+      "title": "归到需求问题",
+      "branch": "HOLD_OWNER",
+      "verdict": "HOLD_OWNER",
+      "exit": 3,
+      "reason": "归因为 bydesign，属于需求判断，需人拍板",
+      "intro": "bydesign：不是缺陷，是设计如此。",
+      "stopNote": "开发不自己拍板，退回产品确认需求边界。"
+    },
+    {
+      "id": "C",
+      "label": "关闭单子",
+      "title": "关闭这张单",
+      "branch": "HANDOFF",
+      "verdict": "HANDOFF",
+      "exit": 3,
+      "reason": "关闭只由提报人操作，AI 提醒到位即止",
+      "intro": "修复完成，但关闭动作不在开发手里。",
+      "stopNote": "提醒提报人验证后关闭，AI 到此为止。"
+    }
+  ]
+}
