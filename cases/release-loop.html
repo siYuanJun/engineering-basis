@@ -26,6 +26,17 @@
   <p class="lead">release-loop 把发版拆成四层闸门，每层有明确的放过条件和停手条件。下面三个样例都走同一份契约快照比对，可以直接跑出同样的结果。</p>
   <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
 
+  <figure class="viz">
+    <div class="frame">
+      <a class="fallback" href="../viz/release-gates.html" target="_blank">
+        <img src="../viz/release-gates.jpg" alt="发版闸门 3D 流转：版本停在 L1 契约关">
+      </a>
+      <div class="ph">正在载入 3D 场景…</div>
+      <iframe src="../viz/release-gates.html?embed=1" title="发版闸门 3D 流转" loading="lazy" onload="this.classList.add('ready')"></iframe>
+    </div>
+    <figcaption>三个样例放进同一条轨道：A 字段改名与 C 端点删除停在第 1 关，B 只加字段过完四关。判定与退出码由 contract_snapshot.py 实跑生成，不是手写动画。</figcaption>
+  </figure>
+
   <h2 id="s1"><span class="n">01</span>它解决什么</h2>
   <p>发版出事，很少是包传错。常见是三件事：把“容器 Up、版本号对”当成发版成功；只升了一半，后端改了响应字段、前端没跟；结论跑在证据前面，“应该是环境问题”。这个工程把“这个版本能不能发”拆成四层——契约、同源、冒烟、生产只读——每层有判定，失败就停。</p>
   <ul>
@@ -73,16 +84,6 @@
   </div>
 
 
-  <figure class="viz">
-    <div class="frame">
-      <a class="fallback" href="../viz/release-gates.html" target="_blank">
-        <img src="../viz/release-gates.jpg" alt="发版闸门 3D 流转：版本停在 L1 契约关">
-      </a>
-      <div class="ph">正在载入 3D 场景…</div>
-      <iframe src="../viz/release-gates.html?embed=1" title="发版闸门 3D 流转" loading="lazy" onload="this.classList.add('ready')"></iframe>
-    </div>
-    <figcaption>三个样例放进同一条轨道：A 字段改名与 C 端点删除停在第 1 关，B 只加字段过完四关。判定与退出码由 contract_snapshot.py 实跑生成，不是手写动画。</figcaption>
-  </figure>
 
   <h2 id="s3"><span class="n">03</span>规则是脚本拦截</h2>
   <p>“发版前比对契约”写在文档里很容易，落到执行常被跳过，因为人总觉得“这次只是加个字段”。这里的做法是让 diff 直接给退出码，跳过就等于失败。</p>
