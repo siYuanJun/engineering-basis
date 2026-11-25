@@ -9,36 +9,31 @@
 <body>
 
 <header class="top">
-  <a class="brand" href="index.html">Engineering Basis</a>
-  <nav>
-    <a href="index.html#cases">案例</a>
-    <a href="index.html#structure">结构</a>
-    <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
-  </nav>
+  <div class="inner">
+    <a class="brand" href="index.html"><i></i>Engineering Basis</a>
+    <nav>
+      <a href="#cases">案例</a>
+      <a href="#structure">结构</a>
+      <a href="#rule">判定形态</a>
+      <a href="https://github.com/siYuanJun/engineering-basis">GitHub</a>
+    </nav>
+  </div>
 </header>
 
-<aside class="side">
-  <div class="label">Index</div>
-  <nav>
-    <a class="on" href="#cases"><span>01</span>案例</a>
-    <a href="#structure"><span>02</span>结构</a>
-    <a href="#rule"><span>03</span>判定形态</a>
-  </nav>
-  <div class="side-foot">
-    <a href="https://github.com/siYuanJun/engineering-basis">→ GitHub</a>
-    5 CASES<br>15 VERDICTS<br>0 DEPENDENCIES
-  </div>
-</aside>
+<main class="wrap">
 
-<main class="main">
-
-  <div class="kicker">
-    <span class="lead-word">判定口索引</span>
-    <span>5 CASES · 15 VERDICTS</span>
+  <div class="eyebrow">
+    <span>判定口索引</span>
+    <span class="r">5 CASES · 15 VERDICTS</span>
   </div>
 
   <h1>把判定写下来</h1>
   <p class="lead">合入、发版、评审各有判定口：这段改动能不能合、这个版本能不能发、这条意见该不该提。判据写成可执行规则，同一份输入换个人来判，结论一样。</p>
+
+  <div class="actions">
+    <a class="btn" href="#cases">查看五个案例</a>
+    <a class="btn ghost" href="https://github.com/siYuanJun/engineering-basis">仓库地址</a>
+  </div>
 
   <dl class="figures">
     <div><dt>案例</dt><dd>5</dd></div>
@@ -49,54 +44,39 @@
 
   <h2 id="cases"><span class="n">01</span>案例</h2>
 
-  <table class="idx">
-    <thead>
-      <tr><th>No</th><th>判定口</th><th>输入</th><th>结论 / 退出码</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="no">01</td>
-        <td class="name"><a href="cases/review-loop.html">合入前审查</a><span class="sub">这条改动能不能合</span></td>
-        <td class="in">改动 diff<br>缺陷清单</td>
-        <td class="out2"><span class="v block">BLOCK</span> · <span class="v pass">APPROVE</span> · <span class="v warn">ESCALATE</span><br>0 · 1 · 3</td>
-      </tr>
-      <tr>
-        <td class="no">02</td>
-        <td class="name"><a href="cases/release-loop.html">发版闸门</a><span class="sub">这个版本能不能发</span></td>
-        <td class="in">契约快照<br>前后端制品</td>
-        <td class="out2"><span class="v block">BLOCK</span> · <span class="v pass">PASS</span><br>0 · 1</td>
-      </tr>
-      <tr>
-        <td class="no">03</td>
-        <td class="name"><a href="cases/bug-loop.html">缺陷闭环</a><span class="sub">改完算不算完</span></td>
-        <td class="in">缺陷单<br>归因字段</td>
-        <td class="out2"><span class="v pass">RESOLVE</span> · <span class="v warn">HOLD</span> · <span class="v block">HANDOFF</span><br>0 · 1 · 3</td>
-      </tr>
-      <tr>
-        <td class="no">04</td>
-        <td class="name"><a href="cases/prd-gap-loop.html">需求核对</a><span class="sub">做的是不是写的那件事</span></td>
-        <td class="in">PRD 台账<br>验收记录</td>
-        <td class="out2"><span class="v pass">PASS</span> · <span class="v block">FAIL</span><br>0 · 1</td>
-      </tr>
-      <tr>
-        <td class="no">05</td>
-        <td class="name"><a href="cases/stage-spec.html">交付表达</a><span class="sub">复杂结构怎么讲清</span></td>
-        <td class="in">结构 JSON<br>层与流程</td>
-        <td class="out2"><span class="v pass">PASS</span> · <span class="v warn">WARN</span> · <span class="v block">FAIL</span><br>0 · 1</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="list">
+    <a href="cases/review-loop.html">
+      <span><span class="t">合入前审查</span><span class="sub">这条改动能不能合。缺陷、影响面、安全三类判据，三态结论。</span></span>
+      <span class="v"><span class="block">BLOCK</span> · <span class="pass">APPROVE</span> · <span class="warn">ESCALATE</span></span>
+    </a>
+    <a href="cases/release-loop.html">
+      <span><span class="t">发版闸门</span><span class="sub">这个版本能不能发。契约快照比对，字段改名、端点删除即阻断。</span></span>
+      <span class="v"><span class="block">BLOCK</span> · <span class="pass">PASS</span></span>
+    </a>
+    <a href="cases/bug-loop.html">
+      <span><span class="t">缺陷闭环</span><span class="sub">改完算不算完。代码类归因可落，需求类归因人拍板，关闭交给提报人。</span></span>
+      <span class="v"><span class="pass">RESOLVE</span> · <span class="warn">HOLD</span> · <span class="block">HANDOFF</span></span>
+    </a>
+    <a href="cases/prd-gap-loop.html">
+      <span><span class="t">需求核对</span><span class="sub">做的是不是写的那件事。逐条对成台账，自签自验、冲突不决策都判失败。</span></span>
+      <span class="v"><span class="pass">PASS</span> · <span class="block">FAIL</span></span>
+    </a>
+    <a href="cases/stage-spec.html">
+      <span><span class="t">交付表达</span><span class="sub">复杂结构怎么讲清。层数、职责、流程先过校验，再生成可拆层的舞台。</span></span>
+      <span class="v"><span class="pass">PASS</span> · <span class="warn">WARN</span> · <span class="block">FAIL</span></span>
+    </a>
+  </div>
 
   <h2 id="structure"><span class="n">02</span>结构</h2>
 
-<pre class="tree"><b>cases/</b>     案例页：问题、判定样例、口径与边界
-<b>demos/</b>     最小切片，clone 后一条命令跑出页面上的结论
-<b>method/</b>    设计缘由：结论形态、复核方式、停止条件
-<b>index.md</b>   私有工程的名字与职责，实现不在这里</pre>
+<pre class="tree">cases/     案例页：问题、判定样例、口径与边界
+demos/     最小切片，clone 后一条命令跑出页面上的结论
+method/    设计缘由：结论形态、复核方式、停止条件
+index.md   私有工程的名字与职责，实现不在这里</pre>
 
   <h2 id="rule"><span class="n">03</span>判定形态</h2>
 
-  <p class="quote">结论有固定形态，不出现“基本可以”“再看看”。每条结论能被另一个人重放：位置、主张、证据、复核方式，缺一项不成立。做不到收敛就停手。</p>
+  <p class="quote">结论有固定形态，不出现“基本可以”“再看看”。每条结论能被另一个人重放：位置、主张、证据、复核方式，缺一项不成立。</p>
 
   <footer>
     公开的是判定切片；完整工程（台账、指标、交接单、发版报告）在私有仓。样例为构造输入，用于复现判定。

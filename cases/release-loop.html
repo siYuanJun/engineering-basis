@@ -9,32 +9,19 @@
 <body>
 
 <header class="top">
-  <a class="brand" href="../index.html">Engineering Basis</a>
-  <nav>
+  <div class="inner">
+    <a class="brand" href="../index.html"><i></i>Engineering Basis</a>
+    <nav>
     <a href="../index.html#cases">案例</a>
     <a href="../index.html#structure">结构</a>
     <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
   </nav>
+  </div>
 </header>
 
-<aside class="side">
-  <div class="label">This case</div>
-  <nav>
-    <a href="#s1"><span>01</span>解决什么</a>
-    <a href="#s2"><span>02</span>判定样例</a>
-    <a href="#s3"><span>03</span>脚本拦截</a>
-    <a href="#s4"><span>04</span>判据边界</a>
-    <a href="#s5"><span>05</span>复现</a>
-  </nav>
-  <div class="side-foot">
-    <a href="../index.html">← 案例索引</a>
-    5 CASES · 0 DEPS
-  </div>
-</aside>
+<main class="wrap">
 
-<main class="main">
-
-  <div class="kicker"><span class="lead-word">CASE 02 / 05</span><span>RELEASE-LOOP</span></div>
+  <div class="eyebrow"><span>CASE 02 / 05</span><span class="r">RELEASE-LOOP</span></div>
   <h1>发版前，什么情况不能发</h1>
   <p class="lead">release-loop 把发版拆成四层闸门，每层有明确的放过条件和停手条件。下面三个样例都走同一份契约快照比对，可以直接跑出同样的结果。</p>
   <div class="meta">公开切片 ｜ 零依赖 ｜ 样例输出为 2026-11-24 本地实跑</div>
