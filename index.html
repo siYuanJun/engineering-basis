@@ -3,79 +3,74 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>工程判定案例</title>
-<style>
-  :root{
-    --ink:#14181F; --sub:#5B6675; --line:#E4E8EE; --bg:#FFFFFF; --soft:#F6F8FA;
-    --accent:#A3231C;
-    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font:16px/1.75 "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased}
-  .wrap{max-width:920px;margin:0 auto;padding:88px 28px 96px}
-  .eyebrow{font:12px/1 var(--mono);letter-spacing:.18em;color:var(--sub);text-transform:uppercase}
-  h1{font-size:40px;line-height:1.25;margin:20px 0 14px;letter-spacing:-.02em}
-  .lead{color:var(--sub);font-size:17px;margin:0;max-width:720px}
-  h2{font-size:15px;margin:64px 0 16px;padding-top:22px;border-top:1px solid var(--line);
-    font:12px/1 var(--mono);letter-spacing:.14em;color:var(--sub);text-transform:uppercase}
-  a{color:inherit}
-  .item{display:block;text-decoration:none;border:1px solid var(--line);border-radius:10px;
-    padding:20px 22px;margin:0 0 14px;transition:border-color .15s}
-  .item:hover{border-color:#B9C2CE}
-  .item b{display:block;font-size:18px;margin-bottom:4px}
-  .item span{color:var(--sub);font-size:14px}
-  .item .tag{font:11px/1 var(--mono);color:var(--sub);letter-spacing:.08em;margin-top:10px;display:block}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:26px}
-  .cols div b{display:block;font-size:14px;margin-bottom:4px}
-  .cols div p{color:var(--sub);font-size:14px;margin:0}
-  .quote{border-left:2px solid var(--line);padding-left:18px;color:var(--sub);font-size:15px;max-width:700px}
-  footer{margin-top:72px;padding-top:18px;border-top:1px solid var(--line);
-    font:12px/1.8 var(--mono);color:var(--sub)}
-  @media (max-width:720px){.cols{grid-template-columns:1fr}h1{font-size:30px}}
-</style>
+<title>工程判定案例 · Engineering Basis</title>
+<link rel="stylesheet" href="assets/base.css">
 </head>
 <body>
+
+<header class="top">
+  <div class="inner">
+    <a class="brand" href="index.html">Engineering Basis</a>
+    <nav>
+      <a href="#cases">案例</a>
+      <a href="#structure">结构</a>
+      <a href="https://github.com/siYuanJun/engineering-basis">仓库</a>
+    </nav>
+  </div>
+</header>
+
 <div class="wrap">
 
-  <div class="eyebrow">Engineering Basis</div>
-  <h1>判断，比生成更难</h1>
-  <p class="lead">这里放的是 AI 工程化里几处判断的写法：怎么判、什么情况停、边界在哪。每个案例配一段可以跑的输入和一个预期结论。</p>
+  <div class="eyebrow">判定口 · 案例索引</div>
+  <h1>把判定写下来</h1>
+  <p class="lead">合入、发版、评审各有判定口：这段改动能不能合、这个版本能不能发、这条意见该不该提。判据写成可执行规则，同一份输入换个人来判，结论一样。下面五个案例，各配一段可以跑的输入和一个预期结论。</p>
 
-  <h2>案例</h2>
+  <dl class="figures">
+    <div><dt>案例</dt><dd>5</dd></div>
+    <div><dt>判定</dt><dd>15</dd></div>
+    <div><dt>可跑切片</dt><dd>5</dd></div>
+    <div><dt>依赖</dt><dd>0</dd></div>
+  </dl>
+
+  <h2 id="cases"><span class="n">01</span>案例</h2>
 
   <a class="item" href="cases/review-loop.html">
+    <span class="idx">01</span>
     <b>合入前审查</b>
-    <span>这条改动能不能合。缺陷、影响面、安全三类判据，三态结论：通过、阻断、升级。</span>
-    <span class="tag">REVIEW-LOOP · 3 个判定 + 2 个反例</span>
+    <span class="desc">这条改动能不能合。缺陷、影响面、安全三类判据，三态结论：通过、阻断、升级。</span>
+    <span class="tag">REVIEW-LOOP</span>
   </a>
 
   <a class="item" href="cases/release-loop.html">
+    <span class="idx">02</span>
     <b>发版闸门</b>
-    <span>这个版本能不能发。契约快照比对，字段改名、端点删除即阻断；只加字段放行。</span>
-    <span class="tag">RELEASE-LOOP · 3 个判定</span>
+    <span class="desc">这个版本能不能发。契约快照比对，字段改名、端点删除即阻断；只加字段放行。</span>
+    <span class="tag">RELEASE-LOOP</span>
   </a>
 
   <a class="item" href="cases/bug-loop.html">
+    <span class="idx">03</span>
     <b>缺陷闭环</b>
-    <span>改完算不算完。代码类归因可落，需求类归因人拍板，关闭交给提报人。</span>
-    <span class="tag">BUG-LOOP · 3 个判定</span>
+    <span class="desc">改完算不算完。代码类归因可落，需求类归因人拍板，关闭交给提报人。</span>
+    <span class="tag">BUG-LOOP</span>
   </a>
 
   <a class="item" href="cases/prd-gap-loop.html">
+    <span class="idx">04</span>
     <b>需求核对</b>
-    <span>做的是不是写的那件事。逐条对成台账，自己验收自己、冲突不决策都判失败。</span>
-    <span class="tag">PRD-GAP-LOOP · 3 个判定</span>
+    <span class="desc">做的是不是写的那件事。逐条对成台账，自己验收自己、冲突不决策都判失败。</span>
+    <span class="tag">PRD-GAP-LOOP</span>
   </a>
 
   <a class="item" href="cases/stage-spec.html">
+    <span class="idx">05</span>
     <b>交付表达</b>
-    <span>复杂结构怎么讲清。层数、职责、流程先过校验，再生成可拆层的舞台。</span>
-    <span class="tag">3D-STAGE-DECK · 3 个判定</span>
+    <span class="desc">复杂结构怎么讲清。层数、职责、流程先过校验，再生成可拆层的舞台。</span>
+    <span class="tag">3D-STAGE-DECK</span>
   </a>
 
-  <h2>结构</h2>
+  <h2 id="structure"><span class="n">02</span>结构</h2>
+
   <div class="cols">
     <div><b>cases</b><p>问题、判定样例、口径与边界。一页说清一件事。</p></div>
     <div><b>demos</b><p>最小切片。clone 后一条命令跑出页面上的结论。</p></div>
@@ -83,8 +78,8 @@
     <div><b>index</b><p>私有工程的名字与职责，实现不在这里。</p></div>
   </div>
 
-  <h2>一条判断长什么样</h2>
-  <p class="quote">结论有固定形态，不出现“基本可以”“再看看”。每条结论能被另一个人重放：位置、主张、证据、复核方式，缺一项不成立。做不到收敛就停手，不靠多审几轮解决。</p>
+  <h2><span class="n">03</span>一条判断长什么样</h2>
+  <p class="quote">结论有固定形态，不出现“基本可以”“再看看”。每条结论能被另一个人重放：位置、主张、证据、复核方式，缺一项不成立。做不到收敛就停手。</p>
 
   <footer>
     公开的是判定切片；完整工程（台账、指标、交接单、发版报告）在私有仓。样例为构造输入，用于复现判定。
