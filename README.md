@@ -19,7 +19,6 @@ cases/          案例页：问题、判定样例、边界
 demos/          最小切片：clone 后可直接跑
 method/         为什么这样设计
 index.md        私有工程的名字与职责
-resume-map.md   能力到案例的映射
 ```
 
 ## 边界
